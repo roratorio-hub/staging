@@ -40949,7 +40949,7 @@ function CSkillManager() {
 				return [ITEM_KIND_AXE, ITEM_KIND_AXE_2HAND].includes(weapon);
 			}
 			this.dispHitCount = function(skillLv) {
-				return 2;
+				return 1;
 			}
 			this.Power = function(skillLv, charaData, option) {
 				let ratio = 0;
@@ -41931,7 +41931,7 @@ function CSkillManager() {
 				return 150 * skillLv;
 			}
 			this.DelayTimeCommon = function(skillLv, charaDataManger) {
-				return 5000 * skillLv;
+				return 5000;
 			}
 			this.CoolTime = function(skillLv, charaDataManger) {
 				return 3000;
