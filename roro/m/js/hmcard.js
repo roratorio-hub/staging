@@ -1228,6 +1228,28 @@ function BuildUpCardSlotsMIG(eqpRgnId, itemId, enchInfoArray, objArySlots) {
 				HtmlCreateElementOption(cardId, cardName, objSelectGroup);
 			}
 
+			// エンチャント検索ショートカットボタン
+			(function(selectEl) {
+				var parent = selectEl.parentNode;
+				parent.style.position = 'relative';
+
+				var searchBtn = document.createElement('button');
+				searchBtn.type = 'button';
+				searchBtn.textContent = '🔍';
+				searchBtn.title = 'エンチャント検索';
+				searchBtn.style.cssText = 'position:absolute; right:0; top:50%; transform:translateY(-50%); border:none; background:transparent; cursor:pointer; opacity:0.4; font-size:0.8em; padding:0 2px;';
+				searchBtn.addEventListener('mouseenter', function() { this.style.opacity = '1'; });
+				searchBtn.addEventListener('mouseleave', function() { this.style.opacity = '0.3'; });
+				searchBtn.addEventListener('click', function() {
+					var enchId = selectEl.value;
+					if (!enchId || enchId == '0') return;
+					var $enchSearch = $('#ench_search');
+					if ($enchSearch.length === 0) return;
+					$enchSearch.val(enchId).trigger('change').trigger('select2:select');
+				});
+				parent.appendChild(searchBtn);
+			})(objSelect);
+
 			// カード用の処理はしない
 			continue;
 		}
