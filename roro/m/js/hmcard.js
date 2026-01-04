@@ -564,6 +564,10 @@ if (!_ENCH_LIST_MIG) {
 		}
 
 		HtmlRemoveAllChild(objArySlots[idx]);
+
+		// エンチャント検索ショートカットボタンの削除
+		var enchSearchBtn = objArySlots[idx].parentNode.querySelector('.ench-search-shortcut-btn');
+		if (enchSearchBtn) enchSearchBtn.remove();
 	}
 
 
@@ -1232,20 +1236,23 @@ function BuildUpCardSlotsMIG(eqpRgnId, itemId, enchInfoArray, objArySlots) {
 			(function(selectEl) {
 				var parent = selectEl.parentNode;
 				parent.style.position = 'relative';
+				parent.classList.add('ench-search-shortcut-parent');
 
 				var searchBtn = document.createElement('button');
 				searchBtn.type = 'button';
-				searchBtn.textContent = '🔍';
+				searchBtn.className = 'ench-search-shortcut-btn';
 				searchBtn.title = 'エンチャント検索';
-				searchBtn.style.cssText = 'position:absolute; right:0; top:50%; transform:translateY(-50%); border:none; background:transparent; cursor:pointer; opacity:0.4; font-size:0.8em; padding:0 2px;';
-				searchBtn.addEventListener('mouseenter', function() { this.style.opacity = '1'; });
-				searchBtn.addEventListener('mouseleave', function() { this.style.opacity = '0.3'; });
 				searchBtn.addEventListener('click', function() {
 					var enchId = selectEl.value;
 					if (!enchId || enchId == '0') return;
 					var $enchSearch = $('#ench_search');
 					if ($enchSearch.length === 0) return;
-					$enchSearch.val(enchId).trigger('change').trigger('select2:select');
+					// 同じエンチャントで検索中なら解除、そうでなければ検索
+					if ($enchSearch.val() === enchId) {
+						$enchSearch.val('').trigger('change').trigger('select2:select');
+					} else {
+						$enchSearch.val(enchId).trigger('change').trigger('select2:select');
+					}
 				});
 				parent.appendChild(searchBtn);
 			})(objSelect);
