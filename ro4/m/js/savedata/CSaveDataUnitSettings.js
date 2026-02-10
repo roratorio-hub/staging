@@ -16,7 +16,7 @@ class CSaveDataUnitSettings extends CSaveDataUnitBase {
      * バージョン番号.
      */
     static get version () {
-        return 6;
+        return 5;
     }
 
     // オーバーライドされた parse 関数
@@ -29,8 +29,7 @@ class CSaveDataUnitSettings extends CSaveDataUnitBase {
         const STATE_VERSION_2 = dataText.length < 8;
         const STATE_VERSION_3 = dataText.length < 19;
         const STATE_VERSION_4 = dataText.length < 22;
-        const STATE_VERSION_5 = dataText.length < 25;
-        const STATE_VERSION_6 = dataText.length < 26;
+        const STATE_VERSION_5 = dataText.length < 23;
         // データ延長
         if (STATE_VERSION_1) {
             extend += "0";
@@ -42,9 +41,6 @@ class CSaveDataUnitSettings extends CSaveDataUnitBase {
             extend += "0000";
         }
         if (STATE_VERSION_4) {
-            extend += "0";
-        }
-        if (STATE_VERSION_5) {
             extend += "0";
         }
         // 延長後データを読み込む
@@ -92,7 +88,6 @@ class CSaveDataUnitSettings extends CSaveDataUnitBase {
             CSaveDataConst.propNameItemInfoAutoSwitch,
             CSaveDataConst.propNameItemInfoTimeEffectSwitch,
             CSaveDataConst.propNamePointCap,
-            CSaveDataConst.propNameDPSActual,
         ];
     }
 
@@ -109,7 +104,7 @@ class CSaveDataUnitSettings extends CSaveDataUnitBase {
     constructor () {
         super();
         // プロパティ定義情報の登録
-        this.registerPropInfo(CSaveDataConst.propNameParseCtrlFlag, 26);
+        this.registerPropInfo(CSaveDataConst.propNameParseCtrlFlag, 25);    // version 3 で 5 → 21 へ増加  version 4 で 21 → 25 へ増加 version 5 で 25 → 26 へ増加
         this.registerPropInfo(CSaveDataConst.propNameConfirmDialogSwitch, 1);
         this.registerPropInfo(CSaveDataConst.propNameResultDigit3, 1);
         this.registerPropInfo(CSaveDataConst.propNameAttackInterval, 6);
@@ -137,7 +132,6 @@ class CSaveDataUnitSettings extends CSaveDataUnitBase {
         this.registerPropInfo(CSaveDataConst.propNameItemInfoAutoSwitch, 1);
         this.registerPropInfo(CSaveDataConst.propNameItemInfoTimeEffectSwitch, 1);
         this.registerPropInfo(CSaveDataConst.propNamePointCap, 1);
-        this.registerPropInfo(CSaveDataConst.propNameDPSActual, 1);
     }
 
     /**
@@ -172,9 +166,7 @@ class CSaveDataUnitSettings extends CSaveDataUnitBase {
         this.setProp(CSaveDataConst.propNameItemInfoSwitch, 0);
         this.setProp(CSaveDataConst.propNameItemInfoAutoSwitch, 0);
         this.setProp(CSaveDataConst.propNameItemInfoTimeEffectSwitch, 0);
-        this.setProp(CSaveDataConst.propNamePointCap, 0);
-        this.setProp(CSaveDataConst.propNameDPSActual, 0);
-	}
+        this.setProp(CSaveDataConst.propNamePointCap, 0);}
 
     /**
      * データのコンパクション（不要データの削除）を行う.
