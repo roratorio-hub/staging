@@ -273,6 +273,7 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_EQPFLG_SERIES_ZYPSY",
 		"ITEM_EQPFLG_SERIES_PROFESSOR",
 		"ITEM_EQPFLG_SERIES_CREATOR",
+		"ITEM_EQPFLG_SERIES_DRUID"
 	],
 	50,
 	1
@@ -309,7 +310,7 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_EQPFLG_CARDINAL",
 		"ITEM_EQPFLG_WIND_HAWK",
 		"ITEM_EQPFLG_ARCH_MAGE",
-		"ITEM_EQPFLG_MEISTER",
+		"ITEM_EQPFLG_MEISTER",			// 164
 		"ITEM_EQPFLG_IMPERIAL_GUARD",
 		"ITEM_EQPFLG_ABYSS_CHASER",
 		"ITEM_EQPFLG_INQUISITOR",
@@ -324,6 +325,7 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_EQPFLG_NIGHT_WATCH",
 		"ITEM_EQPFLG_HYPER_NOVICE",
 		"ITEM_EQPFLG_SPIRIT_HANDLER",
+		"ITEM_EQPFLG_ALITEA"
 	],
 	141,
 	1
@@ -372,6 +374,7 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_EQPFLG_4TH_ACOLYTE",						// 203 4次職アコライト系
 		"ITEM_EQPFLG_4TH_HAMMER_USER",					// 204 ハイパーノービス 4次職ソードマン系 4次職アコライト系 4次職マーチャント系
 		"ITEM_EQPFLG_4TH_BOW_USER",						// 205 4次職アーチャー系 アビスチェイサー
+		"ITEM_EQPFLG_4TH_SWORDMAN_MERCHANT_ALITEA",		// 206 4次職ソードマン系 4次職マーチャント系 アリテア
 	],
 	202,
 	1
@@ -485,7 +488,7 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_SP_RESIST_LONGRANGE",			// 78 遠距離耐性
 		"ITEM_SP_RESIST_NOTBOSS",			// 79 一般耐性
 
-		"ITEM_SP_PHYSICAL_DAMAGE_UP",		// 80
+		"ITEM_SP_PHYSICAL_DAMAGE_UP",		// 80 物理ダメージUP
 		"ITEM_SP_DAMAGE_UP_GROUP_GOBLIN",
 		"ITEM_SP_DAMAGE_UP_GROUP_COBOLD",
 		"ITEM_SP_DAMAGE_UP_GROUP_ORC",
@@ -580,7 +583,7 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_SP_RESIST_STATE_BREAK_SHOULDER",	// 164 
 		"ITEM_SP_RESIST_STATE_BREAK_SHOES",		// 165 
 		"ITEM_SP_RESIST_STATE_BREAK_ACCESSARY",	// 166 
-		"ITEM_SP_RESERVED_167",				// 未使用（167）
+		"ITEM_SP_DAMAGE_UP_EXCLUDING_CRITICAL",	// 167 命中物理攻撃で与えるダメージ+◯%
 		"ITEM_SP_RESERVED_168",				// 未使用（168）
 		"ITEM_SP_RESERVED_169",				// 未使用（169）
 
@@ -1546,6 +1549,8 @@ function GetJobRestrictText(eqpflg) {
 			return "プロフェッサー系";
 		case ITEM_EQPFLG_SERIES_CREATOR:
 			return "クリエイター系";
+		case ITEM_EQPFLG_SERIES_DRUID:
+			return "ドルイド系";
 
 		case ITEM_EQPFLG_TAEGWON:
 			return "テコンキッド";
@@ -1673,6 +1678,8 @@ function GetJobRestrictText(eqpflg) {
 			return "ナイトウォッチ";
 		case ITEM_EQPFLG_SPIRIT_HANDLER:
 			return "スピリットハンドラー";
+		case ITEM_EQPFLG_ALITEA:
+			return "アリテア";
 		case ITEM_EQPFLG_ABYSS_CHASER:
 			return "アビスチェイサー";
 		case ITEM_EQPFLG_SHINKIRO_SHIRANUI:
@@ -1703,6 +1710,8 @@ function GetJobRestrictText(eqpflg) {
 			return "ハイパーノービス 4次職ソードマン系 4次職アコライト系 4次職マーチャント系";
 		case ITEM_EQPFLG_4TH_BOW_USER:
 			return "4次職アーチャー系 アビスチェイサー";
+		case ITEM_EQPFLG_4TH_SWORDMAN_MERCHANT_ALITEA:
+			return "4次職ソードマン系 4次職マーチャント系 アリテア";
 	}
 	return "不明";
 }
@@ -2293,6 +2302,10 @@ function GetItemExplainText(spId, spValue) {
 
 		case ITEM_SP_PHYSICAL_DAMAGE_UP:
 			textInfoArray.push(["", "物理攻撃で与えるダメージ" + sign + spValue + "%"]);
+			break;
+		
+		case ITEM_SP_DAMAGE_UP_EXCLUDING_CRITICAL:
+			textInfoArray.push(["", "命中物理攻撃で与えるダメージ" + sign + spValue + "%"]);
 			break;
 
 		case ITEM_SP_DAMAGE_UP_GROUP_GOBLIN:
