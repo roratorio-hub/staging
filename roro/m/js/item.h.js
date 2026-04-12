@@ -181,13 +181,13 @@ CGlobalConstManager.DefineEnum(
 CGlobalConstManager.DefineEnum(
 	"EnumEquipFlag",
 	[
-		"ITEM_EQPFLG_SERIES_NOVICE",			// 50
+		"ITEM_EQPFLG_SERIES_NOVICE",			// 50 ノービス
 		"ITEM_EQPFLG_SERIES_SWORDMAN",			// 51 ソードマン
 		"ITEM_EQPFLG_SERIES_THIEF_NINJA",		// 52 シーフ
 		"ITEM_EQPFLG_SERIES_ACOLYTE",			// 53
 		"ITEM_EQPFLG_SERIES_ARCHER",			// 54
 		"ITEM_EQPFLG_SERIES_MAGICIAN_LINKER",	// 55 マジシャン リンカー
-		"ITEM_EQPFLG_SERIES_MARCHANT",
+		"ITEM_EQPFLG_SERIES_MARCHANT",			// 56 マーチャント系
 		"ITEM_EQPFLG_RESERVED_57",						// 57 は欠番
 		"ITEM_EQPFLG_SERIES_NINJA",
 		"ITEM_EQPFLG_SERIES_GUNSLINGER",
@@ -198,12 +198,12 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_EQPFLG_SERIES_UPPER_OF_ACOLYTE",			// プリースト系 モンク系
 		"ITEM_EQPFLG_SERIES_UPPER_OF_ARCHER",			// ハンター系 バード系 ダンサー系
 		"ITEM_EQPFLG_SERIES_UPPER_OF_MAGICIAN_LINKER",	// ウィザード系 セージ系 ソウルリンカー系
-		"ITEM_EQPFLG_SERIES_UPPER_OF_MARCHANT",			// ブラックスミス系 アルケミスト系
+		"ITEM_EQPFLG_SERIES_UPPER_OF_MARCHANT",			// 66 ブラックスミス系 アルケミスト系
 		"ITEM_EQPFLG_RESERVED_67",						// 67 は欠番
 		"ITEM_EQPFLG_SERIES_UPPER_OF_NINJA",
 		"ITEM_EQPFLG_SERIES_UPPER_OF_GUNSLINGER",
 
-		"ITEM_EQPFLG_SERIES_SWORDMAN_MARCHANT",			// 70
+		"ITEM_EQPFLG_SERIES_SWORDMAN_MARCHANT",			// 70 ソードマン/マーチャント
 		"ITEM_EQPFLG_TYPE_SILKROBE",					// 剣/聖/魔/商
 		"ITEM_EQPFLG_SERIES_SWORDMAN_THIEF_MARCHANT",
 		"ITEM_EQPFLG_SERIES_ACOLYTE_MARCHANT",
@@ -225,7 +225,7 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_EQPFLG_SERIES_HUNTER_ROGUE",
 		"ITEM_EQPFLG_SERIES_ACOLYTE_ARCHER_MAGICIAN_LINKER",
 
-		"ITEM_EQPFLG_TYPE_ONEHAND_AXE",					// 素/剣/商/暗のみ
+		"ITEM_EQPFLG_TYPE_ONEHAND_AXE",					// 90 素/剣/商/暗/ドルイド のみ
 		"ITEM_EQPFLG_TYPE_SENTO_GREEVE",				// 剣/盗/商/拳/忍
 		"ITEM_EQPFLG_TYPE_DOFRENO_ONO",					// 剣/商/GX/＋
 		"ITEM_EQPFLG_SERIES_3RD_EX2ND",
@@ -325,7 +325,8 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_EQPFLG_NIGHT_WATCH",
 		"ITEM_EQPFLG_HYPER_NOVICE",
 		"ITEM_EQPFLG_SPIRIT_HANDLER",
-		"ITEM_EQPFLG_ALITEA"
+		"ITEM_EQPFLG_ALITEA",
+		"ITEM_EQPFLG_SERIES_SWORDMAN_MARCHANT_DRUID", // 179 ソードマン/マーチャント/ドルイド
 	],
 	141,
 	1
@@ -342,7 +343,7 @@ CGlobalConstManager.DefineEnum(
 		"ITEM_EQPFLG_MAJO_NO_HOUKI",			// 193 ハイパーノービス 4次職マジシャン系 4次職アコライト系 ソウルアセティック
 		"ITEM_EQPFLG_TROUBADOUR_TROUVERE",		// 194 トルバドゥール&トルヴェール
 		"ITEM_EQPFLG_4TH_THIEF",				// 195 4次職シーフ系
-		"ITEM_EQPFLG_4TH_EXCLUDE_CAT", 			// 196 4次職 天帝 ソウルアセティック 蜃気楼 不知火 ナイトウォッチ ハイパーノービス
+		"ITEM_EQPFLG_4TH_EXCLUDE_CAT", 			// 196 4次職 天帝 ソウルアセティック 蜃気楼 不知火 ナイトウォッチ ハイパーノービス アリテア
 		"ITEM_EQPFLG_4TH_SWORDMAN_MERCHANT",	// 197 4次職ソードマン系 4次職マーチャント系
 		"ITEM_EQPFLG_4TH_BLADE_USER", 			// 198 ハイパーノービス 4次職ソードマン系 4次職マジシャン系 4次職アーチャー系 4次職シーフ系 4次職マーチャント系 ソウルアセティック 蜃気楼 不知火
 		"ITEM_EQPFLG_4TH_SWORDMAN", 			// 199 4次職ソードマン系
@@ -1428,6 +1429,8 @@ function GetJobRestrictText(eqpflg) {
 
 		case ITEM_EQPFLG_SERIES_SWORDMAN_MARCHANT:
 			return "ソードマン・マーチャント系";
+		case ITEM_EQPFLG_SERIES_SWORDMAN_MARCHANT_DRUID:
+			return "ソードマン・マーチャント・ドルイド系";
 		case ITEM_EQPFLG_TYPE_SILKROBE:
 			return "ソードマン・アコライト・マジシャン・マーチャント系";
 		case ITEM_EQPFLG_SERIES_SWORDMAN_THIEF_MARCHANT:
@@ -1467,7 +1470,7 @@ function GetJobRestrictText(eqpflg) {
 		case ITEM_EQPFLG_SERIES_ACOLYTE_ARCHER_MAGICIAN_LINKER:
 			return "アコライト・アーチャー・マジシャン・ソウルリンカー系";
 		case ITEM_EQPFLG_TYPE_ONEHAND_AXE:
-			return "ノービス・ソードマン・マーチャント・アサシン系";
+			return "ノービス・ソードマン・マーチャント・アサシン・ドルイド系";
 		case ITEM_EQPFLG_TYPE_SENTO_GREEVE:
 			return "ソードマン・シーフ・マーチャント・拳聖・忍者系";
 		case ITEM_EQPFLG_TYPE_DOFRENO_ONO:
