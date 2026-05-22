@@ -14404,7 +14404,7 @@ export function CSkillManager() {
 				return 3;
 			}
 			this.Power = function(skillLv, charaData, option) {
-				ratio = 0;
+				let ratio = 0;
 				switch (n_B_TAISEI[MOB_CONF_PLAYER_ID_SENTO_AREA]) {
 					case MOB_CONF_PLAYER_ID_SENTO_AREA_YE_COLOSSEUM:
 					case MOB_CONF_PLAYER_ID_SENTO_AREA_YE:
@@ -19088,7 +19088,7 @@ export function CSkillManager() {
 		// ----------------------------------------------------------------
 		// ストリップアクセサリー
 		// ----------------------------------------------------------------
-		window.SKILL_ID_STRIP_ACCESSARY = skillId;
+		window.SKILL_ID_STRIP_ACCESSORY = skillId;
 		skillData = new function() {
 			this.prototype = new CSkillData();
 			CSkillData.call(this);
