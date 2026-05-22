@@ -4,7 +4,7 @@ import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
 // AI ラトリオ RAG ロジック（キーワード検索版）
 // ===============================
 
-console.log("calcx-ai.js loaded");
+console.log("calcx-ai.js 読み込み完了");
 
 // ===============================
 // RAG 用データ
@@ -36,16 +36,32 @@ function normalizeParens(name) {
 }
 
 // ===============================
-// items.json の読み込み
+// items データの読み込み（分割ファイル対応）
 // ===============================
 async function loadRagData() {
-    aiLog("items.json を読み込み中…");
+    aiLog("items データを読み込み中…");
     try {
-        const res = await fetch("/ro4/m/items.json");
-        items = await res.json();
-        aiLog(`items.json 読み込み完了（${items.length} 件）`);
+        // マニフェストから分割ファイルのリストを取得する
+        const manifestRes = await fetch("/ro4/m/items_manifest.json");
+        if (!manifestRes.ok) {
+            throw new Error(`マニフェスト取得失敗: ${manifestRes.status}`);
+        }
+        const manifest = await manifestRes.json();
+        aiLog(`${manifest.parts.length} ファイルを並列読み込み中…`);
+
+        // 全パーツを並列取得して結合する
+        const parts = await Promise.all(
+            manifest.parts.map(async (fname) => {
+                const res = await fetch(`/ro4/m/${fname}`);
+                if (!res.ok) throw new Error(`${fname} の取得失敗: ${res.status}`);
+                return res.json();
+            })
+        );
+
+        items = parts.flat();
+        aiLog(`読み込み完了（${items.length} 件）`);
     } catch (e) {
-        aiLog("items.json の読み込みに失敗: " + e);
+        aiLog("items データの読み込みに失敗: " + e);
     }
 }
 
@@ -308,7 +324,7 @@ function searchSimilarItemsDiversified(query, topPerSlot = 1, maxTotal = 10, all
  * 装備のゲームIDから、計算機内部データを使って
  * 「実際に差せるエンチャント」をスロット番号とカードID付きで返す。
  * @param {string|number} gameId - ゲーム内部ID（ItemObjNewのID）
- * @returns {{name:string, cardId:number, slotIndex:number}[]} 空配列になる場合は取得不展
+ * @returns {{name:string, cardId:number, slotIndex:number}[]} 空配列になる場合は取得不能
  */
 function fetchAvailableEnchants(gameId) {
     const dm = window.g_constDataManager;
@@ -317,7 +333,7 @@ function fetchAvailableEnchants(gameId) {
     if (!dm || !cardDb || !rebuildFn) return [];
 
     try {
-        const ENCHANT_LIST_KIND = 6; // CONST_DATA_KIND_ENCHANT_LIST
+        const ENCHANT_LIST_KIND = 6; // エンチャントリスト種別定数
         // enchInfo 構造: [enchListId, cardId, params]（hmcard.js resultF.push より）
         const ENCH_INFO_CARD_ID_IDX = 1; // enchInfo[1] がカードID
         const CARD_NAME_IDX = 2;         // CardObjNew[cardId][2] が名前
@@ -516,8 +532,10 @@ function buildRagContext(results) {
         const desc = it.description.length > DESC_MAX_LEN
             ? it.description.substring(0, DESC_MAX_LEN) + "…"
             : it.description;
-        const price = formatPrice(it.price);        const slot = it.is_enchant ? "エンチャント" : slotGroup(it.type || "", it.position);
-        ctx += `【装備スロット】${slot}\n`;        ctx += `【アイテム名】${it.displayname}\n`;
+        const price = formatPrice(it.price);
+        const slot = it.is_enchant ? "エンチャント" : slotGroup(it.type || "", it.position);
+        ctx += `【装備スロット】${slot}\n`;
+        ctx += `【アイテム名】${it.displayname}\n`;
         ctx += `【説明】${desc}\n`;
         ctx += `【カテゴリ】${it.type}\n`;
         ctx += `【価格】${price}\n`;
@@ -774,7 +792,7 @@ async function askAI(userQuery) {
     if (enchantResults.length) {
         aiLog(`[エンチャントPhase2] ${enchantResults.length} 件取得`);
     } else {
-        aiLog("[エンチャントPhase2] 計算機データぞうさが未利用のためエンチャント提案なし");
+        aiLog("[エンチャントPhase2] 計算機データ操作が未利用のためエンチャント提案なし");
     }
 
     const results = [...equipResults, ...enchantResults];
@@ -790,7 +808,7 @@ async function askAI(userQuery) {
         try { await initChatModel(); } catch (e) { aiLog("モデルロードに失敗: " + e); }
     }
 
-    // LLM が利用可能ならリストを渡して坍答させる（失敗時は JavaScript 生成で代替）
+    // LLM が利用可能ならリストを渡して回答させる（失敗時は JavaScript 生成で代替）
     if (chatModel) {
         try {
             const response = await chatModel.chat.completions.create({
@@ -1146,7 +1164,11 @@ function buildApplyPreviewText() {
                     note = ` ※「${r.for_equip}」向け（スロット情報なし）`;
                 }
             } else {
-                note = " ※通常カード（自動反映非対応）";
+                if (r.for_equip) {
+                    note = ` ※通常カード（「${r.for_equip}」に自動反映）`;
+                } else {
+                    note = " ※通常カード（対象装備情報なし）";
+                }
             }
             lines.push(`・[${slot}] ${r.item.displayname}（${price}）${note}`);
             continue;
