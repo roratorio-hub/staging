@@ -57,6 +57,7 @@ import {
          SKILL_ID_STORM_GUST, SKILL_ID_TENRACHIMO, SKILL_ID_TURN_UNDEAD,
          SKILL_ID_TUZYO_KOGEKI, SKILL_ID_WUG_BITE, SKILL_ID_WUG_STRIKE
 } from '../../../roro/m/js/skill.dat.js';
+import { UsedSkillSearch } from './skillstate.js';
 // === END AUTO-GENERATED IMPORTS ===
 /* オートスペル設定　最大数 */
 export const AUTO_SPELL_SETTING_COUNT = 20;
@@ -1232,7 +1233,7 @@ export function OnClickExtractSettingAutoSpell(){
 	objTd.appendChild(objInput);
 	objInput.setAttribute("type", "checkbox");
 	objInput.setAttribute("id", "OBJID_EXTRACT_SETTING_AUTO_SPELL");
-	objInput.setAttribute("onClick", "OnClickExtractSettingAutoSpell()");
+	objInput.addEventListener('click', OnClickExtractSettingAutoSpell);
 	// ヘッダ行表示テキスト
 	objLabel = HtmlCreateElement("label", objTd);
 	objLabel.setAttribute("for", "OBJID_EXTRACT_SETTING_AUTO_SPELL");
@@ -1292,7 +1293,7 @@ export function BuildUpSettingHtmlAutoSpell(objTbody) {
 	objTd.appendChild(objInput);
 	objInput.setAttribute("type", "button");
 	objInput.setAttribute("value", "簡易設定");
-	objInput.setAttribute("onClick", "OnClickEasySetUpAutoSpell()");
+	objInput.addEventListener('click', OnClickEasySetUpAutoSpell);
 
 
 	//----------------------------------------------------------------
@@ -1313,7 +1314,7 @@ export function BuildUpSettingHtmlAutoSpell(objTbody) {
 		objSelect = document.createElement("select");
 		objTd.appendChild(objSelect);
 		objSelect.setAttribute("id", "OBJID_AS_SKILL_ID_" + (OBJID_OFFSET_AS_SKILL_ID + idx));
-		objSelect.setAttribute("onChange", "StAllCalc() | OnChangeSettingAutoSpell(true)");
+		objSelect.addEventListener('change', () => { window.StAllCalc(); OnChangeSettingAutoSpell(true); });
 
 		//----------------------------------------------------------------
 		// オートスペルをソートする
@@ -1397,7 +1398,7 @@ export function BuildUpSettingHtmlAutoSpell(objTbody) {
 		objSelect = document.createElement("select");
 		objTd.appendChild(objSelect);
 		objSelect.setAttribute("id", "OBJID_AS_SKILL_LV_" + (OBJID_OFFSET_AS_SKILL_LV + idx));
-		objSelect.setAttribute("onChange", "StAllCalc() | OnChangeSettingAutoSpell(true)");
+		objSelect.addEventListener('change', () => { window.StAllCalc(); OnChangeSettingAutoSpell(true); });
 
 		// Lv-, 1, 2, ... , 10 を設定
 		for (var lvidx = 0; lvidx <= 10; lvidx++) {
@@ -1417,7 +1418,7 @@ export function BuildUpSettingHtmlAutoSpell(objTbody) {
 		objSelect = document.createElement("select");
 		objTd.appendChild(objSelect);
 		objSelect.setAttribute("id", "OBJID_AS_SKILL_PROB_" + (OBJID_OFFSET_AS_SKILL_PROB + idx));
-		objSelect.setAttribute("onChange", "StAllCalc() | OnChangeSettingAutoSpell(true)");
+		objSelect.addEventListener('change', () => { window.StAllCalc(); OnChangeSettingAutoSpell(true); });
 
 		for (var probidx = 0; probidx < AUTO_SPELL_PROB_ARRAY.length; probidx++) {
 			optionText = (AUTO_SPELL_PROB_ARRAY[probidx] / 10) + "%";

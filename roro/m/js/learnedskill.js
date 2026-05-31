@@ -96,7 +96,7 @@ export function OnClickSkillSWLearned(){
 	objInput = document.createElement("input");
 	objInput.setAttribute("type", "checkbox");
 	objInput.setAttribute("id", "OBJID_SKILL_COLUMN_EXTRACT_CHECKBOX");
-	objInput.setAttribute("onClick", "OnClickSkillSWLearned()");
+	objInput.addEventListener('click', OnClickSkillSWLearned);
 	if (n_SkillSWLearned) {
 		// 部品を再構築しているので、チェック状態の再設定が必要
 		objInput.setAttribute("checked", "checked");
@@ -198,7 +198,7 @@ export function OnClickSkillSWLearned(){
 		}
 		objSelect = document.createElement("select");
 		objSelect.setAttribute("id", "OBJID_SELECT_LEARNED_SKILL_LEVEL_" + idx);
-		objSelect.setAttribute("onChange", "RefreshSkillColumnHeaderLearned(this, " + idx + ", this.value)");
+		objSelect.addEventListener('change', (e) => RefreshSkillColumnHeaderLearned(e.target, idx, e.target.value));
 
 		// RTX API用の属性追加
 		const skillData = SkillMap.getByMigIdNum(skillId);

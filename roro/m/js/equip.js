@@ -55,6 +55,7 @@ import { ClearCardSlot, RebuildCardSelect, SetCardSlotEnability } from './hmcard
 import { LEARNED_SKILL_MAX_COUNT, n_A_LearnedSkill, OnClickSkillSWLearned, UpdateLearnedSkillSettingColoring } from './learnedskill.js';
 import { GetObjectIdRndOptKind, GetObjectIdRndOptValue, RebuildRndOptSelect, SetRndOptEnablity, SetRndOptEnablityAll, SetUpRndOptValue } from './hmrndopt.js';
 import { CItemInfoManager } from './CItemInfoManager.js';
+import { g_extraInfoDataBridge } from './CExtraInfoDataBridge.js';
 // === END AUTO-GENERATED IMPORTS ===
 var g_bSuperNoviceFullWeapon;
 var n_A_WeaponType;
@@ -181,9 +182,9 @@ export function changeJobSettings(jobId) {
 	// 攻撃手段欄の初期化
 	CAttackMethodAreaComponentManager.RebuildControls();
 	// 拡張表示の選択値記憶のリセット
-	CExtraInfoAreaComponentManager.ClearStoredValueAll(true);
+	g_extraInfoDataBridge.clearStoredValueAll?.(true);
 	// 拡張表示の再構築
-	CExtraInfoAreaComponentManager.RebuildDispAreaAll();
+	g_extraInfoDataBridge.rebuildDispAreaAll?.();
 }
 
 
@@ -635,7 +636,7 @@ export function OnChangeArmsTypeLeft(itemKind){
 		objInput = HtmlCreateElement("input", objSpan);
 		objInput.setAttribute("type", "button");
 		objInput.setAttribute("value", "左右武器入れ替え");
-		objInput.setAttribute("onclick", "OnClickSwapArms()");
+		objInput.addEventListener('click', OnClickSwapArms);
 	}
 
 	// 左手武器選択欄の再構築
@@ -1259,7 +1260,7 @@ export function OnClickSwapArms() {
 	calc();
 
 	// 検索可能リスト更新
-	LoadSelect2();
+	LoadTomSelect();
 }
 
 
@@ -1923,14 +1924,24 @@ export function copyAccs(from, to){
 	const accs_from = $(id_from).val();
 
 	if ($(`${id_to} option[value=${accs_from}]`).length>0) {
-		$(id_to).val(accs_from).change().trigger("select2:select");
+		$(id_to).val(accs_from).change();
 		[1,2,3,4].forEach((i)=>{
 			$(`${id_to}_CARD_${i}`).prop("selectedIndex", $(`${id_from}_CARD_${i}`).prop("selectedIndex")).change();
 		})
 	} else {
-		$(id_to).prop("selectedIndex", 0).change().trigger("select2:select");
+		$(id_to).prop("selectedIndex", 0).change();
 		[1,2,3,4].forEach((i)=>{
 			$(`${id_to}_CARD_${i}`).prop("selectedIndex", 0).change();
 		})
 	}
+}
+
+/* window compat — dewindow フェーズで除去予定 */
+if (typeof window !== 'undefined') {
+    Object.assign(window, {
+        OnChangeCard,
+        OnChangeCostume,
+        OnChangeArmsTypeLeft,
+        OnChangeRandomEnchant,
+    });
 }
