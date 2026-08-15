@@ -22,6 +22,35 @@ import { GetHigherJobSeriesID, GetLowerJobSeriesID } from '../../../ro4/m/js/dat
 import { HtmlCreateElement, HtmlCreateTextNode, HtmlRemoveOptionAll, HtmlCreateElementOption, HtmlRemoveAllChild } from '../../common/js/util.js';
 import { n_A_PassSkill7 } from '../../../ro4/m/js/skillstate.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: 共有 state 追加分
+import {
+         n_A_JOB,
+} from './roro-state.js';
+
+// C-6: global.js 管理の共有 conf state
+import {
+         g_VariableCastTimeRate,
+} from '../../../ro4/m/js/global.js';
+
+// C-6: foot.js 公開関数（foot-bridge 経由）
+import {
+         GetCastScalingOfSkillForCastTimeVary, GetCastFixOfSkillForCastTimeVary, GetCastScalingOfSkillForCastTimeFixed, GetCastFixOfSkillForCastTimeFixed,
+         GetCastScalingOfSkillForCastTimeForce, GetCastFixOfSkillForCastTimeForce, GetCoolFixOfSkill, GetCostScalingOfSkill,
+         GetCostFixOfSkill, GetEquippedSPValueArrayEquip, GetEquippedSPValueArrayCardAndElse,
+} from './foot-bridge.js';
+
+// C-6: ro4 側共有 state（旧 head.js window 変数）
+import {
+         n_A_Kotei_Cast_Keigen, n_tok,
+} from '../../../ro4/m/js/ro4-state.js';
+import { AUTO_SPELL_DATA_INDEX_SKILL_ID } from './const/EnumAutoSpellDataIndex.js';
+import { CONST_DATA_KIND_JOB } from './const/EnumConstDataKind.js';
+import {
+    ITEM_SP_AUTO_SPELL, ITEM_SP_AUTO_SPELL_HIDDEN_DETAIL, ITEM_SP_AUTO_SPELL_LEVEL_UNSPECIFIED, ITEM_SP_COST_DOWN, ITEM_SP_LEARN_SKILL, ITEM_SP_LEARN_SKILL_HIDDEN_DETAIL,
+    ITEM_SP_LEARN_SKILL_LEVEL_UNSPECIFIED, ITEM_SP_SKILL_DELAY_DOWN, ITEM_SP_SKILL_FIXED_MINUS,
+} from './const/EnumItemSpId.js';
+import { USABLE_SKILL_DATA_INDEX_SKILL_ID } from './const/EnumUsableSkillDataIndex.js';
+
 
 
 export function BuildUpCastSimSimulateArea(objRoot, bAsExpand) {

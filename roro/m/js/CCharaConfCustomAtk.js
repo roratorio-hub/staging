@@ -3,6 +3,7 @@ import { CConfBase } from './CConfBase.js';
 import './CConfBase.js';
 import { CUSTOM_CONF_ATK_LIMIT } from '../../../ro4/m/js/global.js';
 import { HtmlCreateElementOption } from '../../common/js/util.js';
+import { CONTROL_TYPE_BLANK, CONTROL_TYPE_SELECTBOX_NUMBER, CONTROL_TYPE_SELECTBOX_PERCENT, CONTROL_TYPE_SELECTBOX_SPECIAL } from './const/EnumControlType.js';
 // === END AUTO-GENERATED IMPORTS ===
 
 export function CCharaConfCustomAtk(confArray) {
@@ -508,7 +509,7 @@ export function CCharaConfCustomAtk(confArray) {
 			// 選択セレクトボックスを生成
 			objSelect = document.createElement("select");
 			objSelect.setAttribute("id", controlId);
-			objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + this.instanceNo + ", true)");
+			objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(this.instanceNo, true));
 			objTd.appendChild(objSelect);
 
 			// セレクトオプションを生成
@@ -533,7 +534,7 @@ export function CCharaConfCustomAtk(confArray) {
 			// 選択セレクトボックスを生成
 			objSelect = document.createElement("select");
 			objSelect.setAttribute("id", controlId);
-			objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + this.instanceNo + ", true)");
+			objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(this.instanceNo, true));
 			objTd.appendChild(objSelect);
 
 			// セレクトオプションを生成
@@ -560,7 +561,7 @@ export function CCharaConfCustomAtk(confArray) {
 			// 選択セレクトボックスを生成
 			objSelect = document.createElement("select");
 			objSelect.setAttribute("id", controlId);
-			objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + this.instanceNo + ", true)");
+			objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(this.instanceNo, true));
 			objTd.appendChild(objSelect);
 
 			// セレクトオプションを生成

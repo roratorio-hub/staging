@@ -1,9 +1,13 @@
 // === AUTO-GENERATED IMPORTS ===
-import './arrow.h.js';
-import './card.h.js';
+import { n_A_Equip, n_A_card } from './roro-state.js';
+import { CardIdToSetIdMap, ItemIdToSetIdMap, w_SE } from './itemset.dat.js';
+import { set_n_Nitou } from '../../../ro4/m/js/global.js';
+import { shadowEquipRebuildAll } from '../../../ro4/m/js/CShadowEquipControllerDataBridge.js';
+import { g_attackMethodBridge } from './CAttackMethodDataBridge.js';
 import './skill.h.js';
 import {
-         GetHigherJobSeriesID, GetLowerJobSeriesID, IsMatchJobRestrict, IsSameJobClass,
+         GetBaseLevelMax, GetBaseLevelMin, GetHigherJobSeriesID, GetJobLevelMax,
+         GetLowerJobSeriesID, IsMatchJobRestrict, IsSameJobClass,
          IsUsableBSPJob, IsUsableHSPJob
 } from '../../../ro4/m/js/data/mig.job.h.js';
 import { g_constDataManager } from '../../../ro4/m/js/global.js';
@@ -57,9 +61,73 @@ import { GetObjectIdRndOptKind, GetObjectIdRndOptValue, RebuildRndOptSelect, Set
 import { CItemInfoManager } from './CItemInfoManager.js';
 import { g_extraInfoDataBridge } from './CExtraInfoDataBridge.js';
 // === END AUTO-GENERATED IMPORTS ===
-var g_bSuperNoviceFullWeapon;
-var n_A_WeaponType;
-var n_A_Weapon2Type;
+// C-6: JOB 定数
+import {
+         JOB_SERIES_ID_ARCHER, JOB_SERIES_ID_THIEF, JOB_SERIES_ID_GUNSLINGER, JOB_SERIES_ID_SUPERNOVICE,
+} from '../../../ro4/m/js/data/mig.job.h.js';
+
+// C-6: global.js 管理の共有 conf state
+import {
+         n_Nitou,
+} from '../../../ro4/m/js/global.js';
+
+// C-6: head.js 公開関数（head-bridge 経由）
+import {
+         calc, AutoCalc,
+} from '../../../ro4/m/js/head-bridge.js';
+// C-6: engine-registry（hmjob.js との循環 import 回避）
+import { get as registryGet } from '../../../ro4/m/js/engine-registry.js';
+
+// C-6: foot.js 公開関数（foot-bridge 経由）
+import {
+         Init,
+         InitJobInfo, StAllCalc,
+} from './foot-bridge.js';
+
+// C-6: 共有 state（旧 foot.js window 変数）
+import {
+         n_A_WeaponType, set_n_A_WeaponType, n_A_Weapon_Transcendence, n_A_Weapon2_Transcendence,
+         n_A_Weapon_ATKplus, n_A_Weapon2_ATKplus,
+         SpeedPotName,
+         n_A_JOB, set_n_A_JOB, n_A_Weapon2Type, set_n_A_Weapon2Type,
+} from './roro-state.js';
+import { ARROW_DATA_INDEX_ID, ARROW_DATA_INDEX_KANA, ARROW_DATA_INDEX_KIND, ARROW_DATA_INDEX_NAME } from './const/EnumArrowDataIndex.js';
+import { ARROW_KIND_ARROW, ARROW_KIND_BULLET, ARROW_KIND_NONE } from './const/EnumArrowKind.js';
+import { CARD_DATA_INDEX_KIND, CARD_DATA_INDEX_NAME, CARD_DATA_INDEX_SPBEGIN } from './const/EnumCardDataIndex.js';
+import { CARD_KIND_ENCHANT } from './const/EnumCardKind.js';
+import { CONST_DATA_KIND_CARD, CONST_DATA_KIND_COSTUME, CONST_DATA_KIND_ITEM, CONST_DATA_KIND_JOB } from './const/EnumConstDataKind.js';
+import {
+    EQUIP_REGION_ID_ACCESSORY_1, EQUIP_REGION_ID_ACCESSORY_2, EQUIP_REGION_ID_ARMS, EQUIP_REGION_ID_ARMS_LEFT, EQUIP_REGION_ID_BODY, EQUIP_REGION_ID_HEAD_MID,
+    EQUIP_REGION_ID_HEAD_TOP, EQUIP_REGION_ID_HEAD_UNDER, EQUIP_REGION_ID_SHIELD, EQUIP_REGION_ID_SHOES, EQUIP_REGION_ID_SHOULDER,
+} from './const/EnumEquipRegionId.js';
+import { ITEM_DATA_INDEX_ID, ITEM_DATA_INDEX_KANA, ITEM_DATA_INDEX_KIND, ITEM_DATA_INDEX_NAME, ITEM_DATA_INDEX_SPBEGIN, ITEM_DATA_INDEX_WPNLV } from './const/EnumItemDataIndex.js';
+import {
+    ITEM_KIND_ACCESSORY, ITEM_KIND_ACCESSORY_ON1, ITEM_KIND_ACCESSORY_ON2, ITEM_KIND_AXE_2HAND, ITEM_KIND_BODY, ITEM_KIND_BOW,
+    ITEM_KIND_FOOT, ITEM_KIND_FUMA, ITEM_KIND_GATLINGGUN, ITEM_KIND_GRENADEGUN, ITEM_KIND_HANDGUN, ITEM_KIND_HEAD_MID,
+    ITEM_KIND_HEAD_TOP, ITEM_KIND_HEAD_UNDER, ITEM_KIND_KATAR, ITEM_KIND_NONE, ITEM_KIND_RIFLE, ITEM_KIND_SHIELD,
+    ITEM_KIND_SHOTGUN, ITEM_KIND_SHOULDER,
+} from './const/EnumItemKind.js';
+import { ITEM_SP_END, ITEM_SP_LEARNED_SKILL_EFFECT, ITEM_SP_SPECIAL_RANGE } from './const/EnumItemSpId.js';
+import { JOB_ID_ASSASINCROSS, JOB_ID_GILOTINCROSS, JOB_ID_KAGERO, JOB_ID_OBORO } from './const/EnumJobId.js';
+import { RND_OPT_SLOT_COUNT } from './const/EnumRndOptTypeDataIndex.js';
+import { SKILL_DATA_INDEX_NAME } from './const/EnumSkillDataIndex.js';
+
+// スパノビの魂による装備制限解除フラグ。本モジュールが所有者。
+// 書き手は foot.js の RefreshSuperNoviceFullWeapon（SetSuperNoviceFullWeapon 経由）と
+// 当モジュールの changeJobSettings（職変更時に undefined へリセット）。
+// ESM 移行(#1394)で foot.js 側にも別個の宣言ができてしまい状態が分断していたため、
+// 単一の所有者へ統一して live binding で共有する。
+export var g_bSuperNoviceFullWeapon;
+
+/**
+ * スパノビの魂による装備制限解除フラグを設定する。
+ * foot.js など他モジュールは import したライブバインディングを直接代入できないため、
+ * このセッター経由で更新する。
+ * @param {boolean|undefined} bFull
+ */
+export function SetSuperNoviceFullWeapon(bFull) {
+	g_bSuperNoviceFullWeapon = bFull;
+}
 
 /**
  * ステータスや装備などを初期化して職業変更する
@@ -75,10 +143,12 @@ export function changeJobSettings(jobId) {
 		selectJobElem.value = jobId;
 	}
 	// 職業IDが確定したら、ジョブデータを取得
-	let jobData = JobMap.getById(jobId);
+	// セレクトボックスの value は mig ID の数値文字列
+	const migId = parseInt(jobId, 10);
+	let jobData = g_constDataManager.GetDataObject(CONST_DATA_KIND_JOB, migId);
 
 	// 移行中のため、MigIDをグローバル変数「n_A_JOB」を設定
-	window.n_A_JOB = jobData.getMigIdNum();
+	set_n_A_JOB(migId);
 
 	// 職業情報の初期化
 	InitJobInfo(jobId);
@@ -87,7 +157,7 @@ export function changeJobSettings(jobId) {
 	Init(jobId);
 
 	// 武器属性付与手段の名称の設定
-	if (41 <= jobData.getMigIdNum() && jobData.getMigIdNum() <= 43) {
+	if (41 <= migId && migId <= 43) {
 		myInnerHtml("ID_A_HUYO_NAME","暖かい風",0);
 	} else {
 		myInnerHtml("ID_A_HUYO_NAME","武器属性付与",0);
@@ -100,15 +170,15 @@ export function changeJobSettings(jobId) {
 	}
 
 	// ベースレベル選択セレクトボックスの設定
-	var lvMax = jobData.getBaseLvMax();
-	var lvMin = jobData.getBaseLvMin();
+	var lvMax = GetBaseLevelMax(migId);
+	var lvMin = GetBaseLevelMin(migId);
 	var inputElem = document.getElementById("OBJID_SELECT_BASE_LEVEL");
 	inputElem.min = lvMin;
 	inputElem.max = lvMax;
 	inputElem.value = lvMin.toString();
 
 	// ジョブレベル選択セレクトボックスの設定
-	var lvMax = jobData.getJobLvMax();
+	var lvMax = GetJobLevelMax(migId);
 	var lvMin = 1;
 	var inputElem = document.getElementById("OBJID_SELECT_JOB_LEVEL");
 	inputElem.min = lvMin;
@@ -116,7 +186,7 @@ export function changeJobSettings(jobId) {
 	inputElem.value = lvMin.toString();
 
 	// ステータス選択セレクトボックスの設定
-	RebuildStatusSelect(jobId);
+	registryGet('RebuildStatusSelect')(jobId);
 
 	// 速度ＰＯＴ選択セレクトボックスの設定
 	// スピードアップポーション
@@ -124,13 +194,13 @@ export function changeJobSettings(jobId) {
 		document.getElementById("OBJID_SPEED_POT").options[2] = null;
 	}
 	// ハイスピードポーション
-	if (IsUsableHSPJob(jobData.getMigIdNum())) {
+	if (IsUsableHSPJob(migId)) {
 		document.getElementById("OBJID_SPEED_POT").options[2] = new Option(SpeedPotName[2] + "(Lv40)", "2");
 	} else {
 		document.getElementById("OBJID_SPEED_POT").options[2] = new Option("-", "0");
 	}
 	// バーサークポーション
-	if (IsUsableBSPJob(jobData.getMigIdNum())) {
+	if (IsUsableBSPJob(migId)) {
 		document.getElementById("OBJID_SPEED_POT").options[3] = new Option(SpeedPotName[3]+"(Lv85)", "3");
 	} else if(IsSameJobClass(JOB_ID_ASSASINCROSS) || IsSameJobClass(JOB_ID_GILOTINCROSS)) {
 		document.getElementById("OBJID_SPEED_POT").options[3] = new Option("■特殊("+ SkillObjNew[304][SKILL_DATA_INDEX_NAME] +"Lv85)/毒薬の瓶", "3");
@@ -142,7 +212,7 @@ export function changeJobSettings(jobId) {
 	g_bSuperNoviceFullWeapon = undefined;
 	// 二刀流状態の解除
 	if (n_Nitou) {
-		window.n_Nitou = false;
+		set_n_Nitou(false);
 	}
 	OnChangeArmsTypeLeft(ITEM_KIND_NONE);
 
@@ -154,7 +224,7 @@ export function changeJobSettings(jobId) {
 	var j = 0;
 	for (var i = 0; i <= 21; i++) {
 		// スパノビ系の両手斧は装備制限解除状態の時のみ可
-		if (GetHigherJobSeriesID(jobData.getMigIdNum()) == JOB_SERIES_ID_SUPERNOVICE) {
+		if (GetHigherJobSeriesID(migId) == JOB_SERIES_ID_SUPERNOVICE) {
 			if (i == ITEM_KIND_AXE_2HAND) {
 				if (!g_bSuperNoviceFullWeapon) {
 					continue;
@@ -171,16 +241,14 @@ export function changeJobSettings(jobId) {
 	// 防具選択欄を再構築
 	RebuildArmorsSelect();
 	// シャドウ装備
-	if ((typeof g_shadowEquipController) !== "undefined") {
-		g_shadowEquipController.rebuildAll();
-	}
+	shadowEquipRebuildAll();
 	// 習得スキルの初期化
 	for (var dmyidx = 0; dmyidx < LEARNED_SKILL_MAX_COUNT; dmyidx++) {
 		n_A_LearnedSkill[dmyidx] = 0;
 	}
 	OnClickSkillSWLearned();
 	// 攻撃手段欄の初期化
-	CAttackMethodAreaComponentManager.RebuildControls();
+	g_attackMethodBridge.rebuildControls?.();
 	// 拡張表示の選択値記憶のリセット
 	g_extraInfoDataBridge.clearStoredValueAll?.(true);
 	// 拡張表示の再構築
@@ -213,8 +281,7 @@ export function OnChangeArmsTypeRight(itemKind){
 
 	// 武器種別の設定
 	HtmlSetObjectValueById("OBJID_ARMS_TYPE_RIGHT", itemKind);
-	n_A_WeaponType = itemKind;
-	window.n_A_WeaponType = n_A_WeaponType;
+	set_n_A_WeaponType(itemKind);
 
 
 	// 矢リストを再構築する
@@ -277,7 +344,7 @@ export function OnChangeArmsTypeRight(itemKind){
 
 			objSelectArrow = document.createElement("select");
 			objSelectArrow.setAttribute("id", "OBJID_SELECT_ARROW");
-			objSelectArrow.setAttribute("onChange", "StAllCalc() | AutoCalc()");
+			objSelectArrow.addEventListener("change", () => { StAllCalc(); AutoCalc(); });
 			objRoot.appendChild(objSelectArrow);
 		}
 
@@ -309,12 +376,14 @@ export function OnChangeArmsTypeRight(itemKind){
 
 		if(GetHigherJobSeriesID(n_A_JOB) == 8 && itemKind != ITEM_KIND_KATAR){
 			if (!n_Nitou) {
-				myInnerHtml("A_SobWeaponName","　左手："+'<select id="OBJID_ARMS_TYPE_LEFT" name="A_Weapon2Type" onChange = "OnChangeArmsTypeLeft(this[this.selectedIndex].value) | StAllCalc() | AutoCalc()"> <option value="0">素手or盾<option value="1">短剣<option value="2">片手剣<option value="6">片手斧</select>',0);
+				myInnerHtml("A_SobWeaponName","　左手："+'<select id="OBJID_ARMS_TYPE_LEFT" name="A_Weapon2Type"> <option value="0">素手or盾<option value="1">短剣<option value="2">片手剣<option value="6">片手斧</select>',0);
+				__WireArmsTypeLeftSelect();
 			}
 		}
 		else if((IsSameJobClass(JOB_ID_KAGERO) || IsSameJobClass(JOB_ID_OBORO)) && (itemKind != ITEM_KIND_FUMA)){
 			if (!n_Nitou) {
-				myInnerHtml("A_SobWeaponName","　左手："+'<select id="OBJID_ARMS_TYPE_LEFT" name="A_Weapon2Type" onChange = "OnChangeArmsTypeLeft(this[this.selectedIndex].value) | StAllCalc() | AutoCalc()"> <option value=0>素手or盾<option value=1>短剣</select>',0);
+				myInnerHtml("A_SobWeaponName","　左手："+'<select id="OBJID_ARMS_TYPE_LEFT" name="A_Weapon2Type"> <option value=0>素手or盾<option value=1>短剣</select>',0);
+				__WireArmsTypeLeftSelect();
 			}
 		}
 		else{
@@ -329,7 +398,7 @@ export function OnChangeArmsTypeRight(itemKind){
 				OnChangeArmsTypeLeft(ITEM_KIND_NONE);
 			}
 
-			window.n_Nitou = false;
+			set_n_Nitou(false);
 
 			// 左手武器欄を無効化する
 			_cf.A_Weapon2_ATKplus.disabled = true;
@@ -366,11 +435,22 @@ export function OnChangeArmsTypeRight(itemKind){
 		}
 
 		// 攻撃手段の更新
-		CAttackMethodAreaComponentManager.RebuildControls();
+		g_attackMethodBridge.rebuildControls?.();
 
 		// アイテムデータ説明の更新
 		CItemInfoManager.OnChangeEquip(CONST_DATA_KIND_ITEM, n_A_Equip[EQUIP_REGION_ID_ARMS]);
 	}
+}
+
+/**
+ * myInnerHtml で生成した左手武器種セレクトボックスに change リスナーを接続する.
+ */
+function __WireArmsTypeLeftSelect() {
+	const objSelect = document.getElementById("OBJID_ARMS_TYPE_LEFT");
+	if (objSelect == null) {
+		return;
+	}
+	objSelect.addEventListener("change", (e) => { OnChangeArmsTypeLeft(e.currentTarget.value); StAllCalc(); AutoCalc(); });
 }
 
 
@@ -545,8 +625,7 @@ export function OnChangeArmsTypeLeft(itemKind){
 
 	// 武器種別の設定
 	HtmlSetObjectValueById("OBJID_ARMS_TYPE_LEFT", itemKind);
-	n_A_Weapon2Type = itemKind;
-	window.n_A_Weapon2Type = n_A_Weapon2Type;
+	set_n_A_Weapon2Type(itemKind);
 
 	// 対象セレクトボックスの取得
 	objSelectLeft = document.getElementById("OBJID_ARMS_LEFT");
@@ -584,7 +663,7 @@ export function OnChangeArmsTypeLeft(itemKind){
 		objArrayToHidden.push(objSelectShiledRefine);
 		objArrayToHidden.push(objSelectShiledTranscendence);
 
-		window.n_Nitou = true;
+		set_n_Nitou(true);
 	}
 
 	// 二刀流解除の場合
@@ -607,7 +686,7 @@ export function OnChangeArmsTypeLeft(itemKind){
 		objArrayToVisible.push(objSelectShiledRefine);
 		objArrayToVisible.push(objSelectShiledTranscendence);
 
-		window.n_Nitou = false;
+		set_n_Nitou(false);
 	}
 
 	for (idx = 0; idx < objArrayToVisible.length; idx++) {
@@ -679,8 +758,7 @@ export function RebuildArmsLeftSelect() {
 	//--------------------------------
 	// 左手武器種別の取得
 	//--------------------------------
-	n_A_Weapon2Type = HtmlGetObjectValueById("OBJID_ARMS_TYPE_LEFT", 0);
-	window.n_A_Weapon2Type = n_A_Weapon2Type;
+	set_n_A_Weapon2Type(HtmlGetObjectValueById("OBJID_ARMS_TYPE_LEFT", 0));
 
 
 	//--------------------------------
@@ -764,7 +842,7 @@ export function OnChangeRefined() {
 	StAllCalc();
 
 	// 攻撃手段の更新
-	CAttackMethodAreaComponentManager.RebuildControls();
+	g_attackMethodBridge.rebuildControls?.();
 
 }
 
@@ -819,7 +897,7 @@ export function OnChangeEquip(eqpRgnId, itemId) {
 	UpdateLearnedSkillSettingColoring();
 
 	// 攻撃手段の更新
-	CAttackMethodAreaComponentManager.RebuildControls();
+	g_attackMethodBridge.rebuildControls?.();
 
 }
 
@@ -961,7 +1039,8 @@ export function ClearEnchantOnChangeEquip(eqpRgnId, itemId) {
 			cardRgnId = cardRegionIdArrayToClear[slotidx];
 
 			// 設定状況をクリア
-			if (CardObjNew[n_A_card[cardRgnId]][CARD_DATA_INDEX_KIND] == CARD_KIND_ENCHANT) {
+			const _cardEntry = CardObjNew[n_A_card[cardRgnId]];
+			if (_cardEntry && _cardEntry[CARD_DATA_INDEX_KIND] == CARD_KIND_ENCHANT) {
 				n_A_card[cardRgnId] = CARD_ID_NONE;
 			}
 		}
@@ -1284,7 +1363,7 @@ export function OnChangeCard(cardId) {
 	UpdateLearnedSkillSettingColoring();
 
 	// 攻撃手段の更新
-	CAttackMethodAreaComponentManager.RebuildControls();
+	g_attackMethodBridge.rebuildControls?.();
 }
 
 
@@ -1936,12 +2015,6 @@ function setSelectValueSynced(selector, value) {
 	}
 }
 
-/** select の「装備なし／カードなし」値（先頭オプション）を返す。 */
-function getNoneValue(selector) {
-	const el = document.querySelector(selector);
-	return (el && el.options.length) ? el.options[0].value : '0';
-}
-
 export function copyAccs(from, to){
 	// ランダムオプション入力中はelementがないので処理できない
 	// 中途半端になるので何もしないようにする
@@ -1959,23 +2032,16 @@ export function copyAccs(from, to){
 		// カードは「値」でコピーする（index 不可・上記コメント参照）
 		[1,2,3,4].forEach((i)=>{
 			const fromEl = document.querySelector(`${id_from}_CARD_${i}`);
-			setSelectValueSynced(`${id_to}_CARD_${i}`, fromEl ? fromEl.value : getNoneValue(`${id_to}_CARD_${i}`));
+			setSelectValueSynced(`${id_to}_CARD_${i}`, fromEl ? fromEl.value : String(CARD_ID_NONE));
 		})
 	} else {
 		// ソースのアクセサリが対象に無い → 「装備なし」へリセット
-		setSelectValueSynced(id_to, getNoneValue(id_to));
+		// getNoneValue(selector) は TomSelect が選択 option を DOM 末尾へ移動した後に
+		// options[0] を読むため誤値を返す。定数を直接使う。
+		setSelectValueSynced(id_to, String(ITEM_ID_NOEQUIP_ACCESSORY));
 		[1,2,3,4].forEach((i)=>{
-			setSelectValueSynced(`${id_to}_CARD_${i}`, getNoneValue(`${id_to}_CARD_${i}`));
+			setSelectValueSynced(`${id_to}_CARD_${i}`, String(CARD_ID_NONE));
 		})
 	}
 }
 
-/* window compat — dewindow フェーズで除去予定 */
-if (typeof window !== 'undefined') {
-    Object.assign(window, {
-        OnChangeCard,
-        OnChangeCostume,
-        OnChangeArmsTypeLeft,
-        OnChangeRandomEnchant,
-    });
-}

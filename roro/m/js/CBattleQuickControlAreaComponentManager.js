@@ -1,10 +1,16 @@
 // === AUTO-GENERATED IMPORTS ===
 import './timeitem.h.js';
 import { ITEM_SP_TIME_OBJ } from './timeitem.dat.js';
-import { g_timeItemConf, g_timeItemConfEffective } from '../../../ro4/m/js/global.js';
+import { g_timeItemConf, g_timeItemConfEffective, g_timeItemConfAllEffective, set_g_timeItemConfAllEffective } from '../../../ro4/m/js/global.js';
 import { CTimeItemAreaComponentManager } from './CTimeItemAreaComponentManager.js';
 import { HtmlCreateElement, HtmlCreateTextNode, HtmlCreateElementOption, HtmlRemoveAllChild, HtmlGetObjectValueByIdAsInteger, HtmlSetObjectValueById } from '../../common/js/util.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: head.js 公開関数（head-bridge 経由）
+import {
+         calc,
+} from '../../../ro4/m/js/head-bridge.js';
+import { TIME_ITEM_DATA_INDEX_EXPLAIN, TIME_ITEM_DATA_INDEX_NAME } from './const/EnumTimeItemDataIndex.js';
+
 /**
  * 時限アイテムエリアコンポーネントマネージャクラス.
  */
@@ -58,6 +64,10 @@ CBattleQuickControlAreaComponentManager.RebuildControls = function () {
 
 	// 設定欄を初期化
 	objRoot = document.getElementById("ID_BATTLE_QUICK_CONTROL_AREA");
+	// この設定欄を持たないページ（roro/other/ 等）では構築をスキップする
+	if (!objRoot) {
+		return;
+	}
 	HtmlRemoveAllChild(objRoot);
 
 	// 設定欄テーブルを再構築
@@ -306,7 +316,7 @@ CBattleQuickControlAreaComponentManager.AllSet = function (flg) {
 		flg = 0;
 	}
 	// 一斉変更ボタンの状態を保存する
-	g_timeItemConfAllEffective = flg;
+	set_g_timeItemConfAllEffective(flg);
 	// 時限効果の状態を個別に変更する
 	for (let idx = 0; idx < g_timeItemConf.length; idx++) {
 		objSelect = document.getElementById("OBJID_SELECT_BATTLE_QUICK_CONTROL_TIME_ITEM_" + idx);

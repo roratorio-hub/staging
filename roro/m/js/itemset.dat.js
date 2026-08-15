@@ -1,5 +1,7 @@
 
-import { ITEM_SET_PET_ID_OFFSET } from './itemset.h.js';
+// ペットID指定のオフセット（カードと同じように指定するので、カードIDで実現しないぐらい大きな値を設定）
+// 3f-5: itemset.h.js から移動（このファイルを依存ゼロのデータモジュールに保つため。itemset.h.js が再エクスポートする）
+export const ITEM_SET_PET_ID_OFFSET = 100000;
 
 export const ItemIdToSetIdMap = new Array();
 
@@ -1762,7 +1764,7 @@ export const w_SE = [
 		[-1994,-1975,-1090],
 		[-1995,-1975,-750],
 		[-1996,-1975,-1534],
-		[-1997,-1975,-166],
+		[-1997,-1975,-166],	// 魔剣士タナトスの思念体 + 英雄
 		[-1998,-1975,-1065],
 		[-1999,-1975,-1536],
 		[-2000,-1975,-1412],
@@ -2147,8 +2149,8 @@ export const w_SE = [
 		[-2410,-2311,-2409],
 		[-2413,-2311,-2412],
 		[-2424,-1975,-2423],
-		[-2418,-2417,-166],
-		[-2419,-2417,-1948],
+		[-2418,-2417,-166],	// 魔剣士タナトスの思念体 + 天地
+		[-2419,-2417,-1948],	// 封印された魔剣士タナトスの思念体 + 天地
 		[-2425,-2417,-2423],
 		[-2432,-2430,-2431],
 		[4669,4668,4278],
@@ -7022,14 +7024,205 @@ CardIdToSetIdMap[4383] = CardIdToSetIdMap[4383].concat([3552, 3565]);
 CardIdToSetIdMap[4385] = CardIdToSetIdMap[4385].concat([3553, 3566]);
 CardIdToSetIdMap[4387] = CardIdToSetIdMap[4387].concat([3554, 3567]);
 CardIdToSetIdMap[4389] = CardIdToSetIdMap[4389].concat([3555, 3568]);
+	w_SE[3571] = [-4393,-2421,-1975,];	// タナトスの記憶(怨望)
+	w_SE[3572] = [-4394,-2421,-2417,];
+	w_SE[3573] = [-4395,-2427,-1975,];	// タナトスの記憶(恐怖)
+	w_SE[3574] = [-4396,-2427,-2417,];
+	w_SE[3575] = [-4397,-2428,-1975,];	// タナトスの記憶(後悔)
+	w_SE[3576] = [-4398,-2428,-2417,];
+	w_SE[3577] = [-4399,-2429,-1975,];	// タナトスの記憶(憤怒)
+	w_SE[3578] = [-4400,-2429,-2417,];
+	CardIdToSetIdMap[2421] = [3571,3572];
+	CardIdToSetIdMap[2427] = [3573,3574];
+	CardIdToSetIdMap[2428] = [3575,3576];
+	CardIdToSetIdMap[2429] = [3577,3578];
+// 封印MVP追加
+w_SE[3579] = [-4402,-4401,-1245,];
+CardIdToSetIdMap[4401] = [3579,];
+w_SE[3580] = [-4404,-4403,-1245,];
+CardIdToSetIdMap[4403] = [3580,];
+w_SE[3581] = [-4406,-4405,-1348,];
+CardIdToSetIdMap[4405] = [3581,];
+w_SE[3582] = [-4408,-4407,-1348,];
+CardIdToSetIdMap[4407] = [3582,];
+w_SE[3583] = [-4410,-4409,-1348,];
+CardIdToSetIdMap[4409] = [3583,];
+w_SE[3584] = [-4412,-4411,-1245,];
+CardIdToSetIdMap[4411] = [3584,];
+w_SE[3585] = [-4414,-4413,-1348,];
+CardIdToSetIdMap[4413] = [3585,];
+w_SE[3586] = [-4416,-4415,-1348,];
+CardIdToSetIdMap[4415] = [3586,];
+w_SE[3587] = [-4418,-4417,-1245,];
+CardIdToSetIdMap[4417] = [3587,];
+w_SE[3588] = [-4420,-4419,-1348,];
+CardIdToSetIdMap[4419] = [3588,];
+w_SE[3589] = [-4422,-4421,-1348,];
+CardIdToSetIdMap[4421] = [3589,];
+w_SE[3590] = [-4424,-4423,-1245,];
+CardIdToSetIdMap[4423] = [3590,];
+w_SE[3591] = [-4426,-4425,-1245,];
+CardIdToSetIdMap[4425] = [3591,];
+w_SE[3592] = [-4428,-4427,-1245,];
+CardIdToSetIdMap[4427] = [3592,];
+w_SE[3593] = [-4430,-4429,-1348,];
+CardIdToSetIdMap[4429] = [3593,];
+w_SE[3594] = [-4432,-4431,-1348,];
+CardIdToSetIdMap[4431] = [3594,];
+w_SE[3595] = [-4434,-4433,-1348,];
+CardIdToSetIdMap[4433] = [3595,];
+w_SE[3596] = [-4436,-4435,-1348,];
+CardIdToSetIdMap[4435] = [3596,];
+w_SE[3597] = [-4438,-4437,-1348,];
+CardIdToSetIdMap[4437] = [3597,];
+w_SE[3598] = [-4440,-4439,-1348,];
+CardIdToSetIdMap[4439] = [3598,];
+w_SE[3599] = [-4442,-4441,-1348,];
+CardIdToSetIdMap[4441] = [3599,];
+w_SE[3600] = [-4444,-4443,-1245,];
+CardIdToSetIdMap[4443] = [3600,];
+w_SE[3601] = [-4446,-4445,-1348,];
+CardIdToSetIdMap[4445] = [3601,];
+w_SE[3602] = [-4448,-4447,-1348,];
+CardIdToSetIdMap[4447] = [3602,];
+w_SE[3603] = [-4450,-4449,-1348,];
+CardIdToSetIdMap[4449] = [3603,];
+w_SE[3604] = [-4452,-4451,-1348,];
+CardIdToSetIdMap[4451] = [3604,];
+w_SE[3605] = [-4454,-4453,-1348,];
+CardIdToSetIdMap[4453] = [3605,];
+w_SE[3606] = [-4456,-4455,-1348,];
+CardIdToSetIdMap[4455] = [3606,];
+w_SE[3607] = [-4458,-4457,-1245,];
+CardIdToSetIdMap[4457] = [3607,];
+w_SE[3608] = [-4460,-4459,-1245,];
+CardIdToSetIdMap[4459] = [3608,];
+w_SE[3609] = [-4462,-4461,-1348,];
+CardIdToSetIdMap[4461] = [3609,];
+w_SE[3610] = [-4464,-4463,-1348,];
+CardIdToSetIdMap[4463] = [3610,];
+	// 特異点タナトス
+	w_SE[3611] = [-4472,-4471,-1975,];
+	w_SE[3612] = [-4473,-4471,-2417,];
+	CardIdToSetIdMap[4471] = [3611,3612,];
+	w_SE[3613] = [-4475,-4474,-1975,];
+	w_SE[3614] = [-4476,-4474,-2417,];
+	CardIdToSetIdMap[4474] = [3613,3614,];
+	w_SE[3615] = [-4479,-4478,-1975,];
+	w_SE[3616] = [-4480,-4478,-2417,];
+	CardIdToSetIdMap[4478] = [3615,3616,];
+	w_SE[3617] = [-4482,-4481,-1975,];
+	w_SE[3618] = [-4483,-4481,-2417,];
+	CardIdToSetIdMap[4481] = [3617,3618,];
+	w_SE[3619] = [-4485,-4484,-1975,];
+	w_SE[3620] = [-4486,-4484,-2417,];
+	CardIdToSetIdMap[4484] = [3619,3620,];
+	w_SE[3621] = [-4488,-4487,-1975,];
+	w_SE[3622] = [-4489,-4487,-2417,];
+	CardIdToSetIdMap[4487] = [3621,3622,];
+	w_SE[3623] = [-4491,-4490,-1975,];
+	w_SE[3624] = [-4492,-4490,-2417,];
+	CardIdToSetIdMap[4490] = [3623,3624,];
+	w_SE[3625] = [-4494,-4493,-1975,];
+	w_SE[3626] = [-4495,-4493,-2417,];
+	CardIdToSetIdMap[4493] = [3625,3626,];
+	w_SE[3627] = [-4497,-4496,-1975,];
+	w_SE[3628] = [-4498,-4496,-2417,];
+	CardIdToSetIdMap[4496] = [3627,3628,];
+	w_SE[3629] = [-4503,-4502,-1975,];
+	w_SE[3630] = [-4504,-4502,-2417,];
+	CardIdToSetIdMap[4502] = [3629,3630,];
+	w_SE[3631] = [-4508,-4468,-4469,];
+	CardIdToSetIdMap[4468] = [3631,];
+	CardIdToSetIdMap[4469] = [3631,];
+	//	
+	w_SE[3632] = [5704,5703,-2417,];
+	ItemIdToSetIdMap[5703] = [3632,];
+	w_SE[3633] = [5706,5705,-2417,];
+	ItemIdToSetIdMap[5705] = [3633,];
+	w_SE[3634] = [5708,5707,-2417,];
+	ItemIdToSetIdMap[5707] = [3634,];
+	w_SE[3635] = [5710,5709,-2417,];
+	ItemIdToSetIdMap[5709] = [3635,];
+	w_SE[3636] = [5712,5711,-2417,];
+	ItemIdToSetIdMap[5711] = [3636,];
+	w_SE[3637] = [5714,5713,-2417,];
+	ItemIdToSetIdMap[5713] = [3637,];
+	w_SE[3638] = [5716,5715,-2417,];
+	ItemIdToSetIdMap[5715] = [3638,];
+	w_SE[3639] = [5718,5717,-2417,];
+	ItemIdToSetIdMap[5717] = [3639,];
+	w_SE[3640] = [5720,5719,-2417,];
+	ItemIdToSetIdMap[5719] = [3640,];
+	w_SE[3641] = [5722,5721,-2417,];
+	ItemIdToSetIdMap[5721] = [3641,];
+	w_SE[3642] = [5724,5723,-2417,];
+	ItemIdToSetIdMap[5723] = [3642,];
+	w_SE[3643] = [5726,5725,-2417,];
+	ItemIdToSetIdMap[5725] = [3643,];
+	w_SE[3644] = [5728,5727,-2417,];
+	ItemIdToSetIdMap[5727] = [3644,];
+	w_SE[3645] = [5730,5729,-2417,];
+	ItemIdToSetIdMap[5729] = [3645,];
+	w_SE[3646] = [5732,5731,-2417,];
+	ItemIdToSetIdMap[5731] = [3646,];
+	w_SE[3647] = [5734,5733,-2417,];
+	ItemIdToSetIdMap[5733] = [3647,];
+	w_SE[3648] = [5736,5735,-2417,];
+	ItemIdToSetIdMap[5735] = [3648,];
+	w_SE[3649] = [5738,5737,-2417,];
+	ItemIdToSetIdMap[5737] = [3649,];
+	w_SE[3650] = [5740,5739,-2417,];
+	ItemIdToSetIdMap[5739] = [3650,];
+	CardIdToSetIdMap[1245] = CardIdToSetIdMap[1245].concat([3579, 3580, 3584, 3587, 3590, 3591, 3592, 3600, 3607, 3608]);
+	CardIdToSetIdMap[1348] = CardIdToSetIdMap[1348].concat([3581, 3582, 3583, 3585, 3586, 3588, 3589, 3593, 3594, 3595, 3596, 3597, 3598, 3599, 3601, 3602, 3603, 3604, 3605, 3606, 3609, 3610]);
+	CardIdToSetIdMap[1975] = CardIdToSetIdMap[1975].concat([3611, 3613, 3615, 3617, 3619, 3621, 3623, 3625, 3627, 3629]);
+	CardIdToSetIdMap[2417] = CardIdToSetIdMap[2417].concat([3572, 3574, 3576, 3578, 3612, 3614, 3616, 3618, 3620, 3622, 3624, 3626, 3628, 3630, 3632, 3633, 3634, 3635, 3636, 3637, 3638, 3639, 3640, 3641, 3642, 3643, 3644, 3645, 3646, 3647, 3648, 3649, 3650]);
+	w_SE[3651] = [-4510,-4509,-1348,];
+	CardIdToSetIdMap[4509] = [3651,];
+	w_SE[3652] = [-4512,-4511,-1245,];
+	CardIdToSetIdMap[4511] = [3652,];
+	w_SE[3653] = [-4514,-4513,-1348,];
+	CardIdToSetIdMap[4513] = [3653,];
+	CardIdToSetIdMap[1245] = CardIdToSetIdMap[1245].concat([3652]);
+	CardIdToSetIdMap[1348] = CardIdToSetIdMap[1348].concat([3651, 3653]);
+	//
+	w_SE[3654] = [-4516,-4515,-1348,];
+	CardIdToSetIdMap[4515] = [3654,];
+	w_SE[3655] = [-4518,-4517,-1245,];
+	CardIdToSetIdMap[4517] = [3655,];
+	w_SE[3661] = [-4520,-4519,-1348,];
+	CardIdToSetIdMap[4519] = [3661,];
+	w_SE[3662] = [-4522,-4521,-1348,];
+	CardIdToSetIdMap[4521] = [3662,];
+	w_SE[3663] = [-4524,-4523,-1245,];
+	CardIdToSetIdMap[4523] = [3663,];
+	CardIdToSetIdMap[1348] = CardIdToSetIdMap[1348].concat([3654,3661,3662]);
+	CardIdToSetIdMap[1245] = CardIdToSetIdMap[1245].concat([3655,3663]);
+	//
+	w_SE[3656] = [4236,4235,-(ITEM_SET_PET_ID_OFFSET + 112)]; // ヴェルゼブブ
+	w_SE[3657] = [4236,4235,-(ITEM_SET_PET_ID_OFFSET + 113)]; // 呪殺のヒメルメズ
+	PetIdToSetIdMap[112] = [3656];
+	PetIdToSetIdMap[113] = [3657];
+	ItemIdToSetIdMap[4235] = ItemIdToSetIdMap[4235].concat([3656, 3657]);
+	//
+	w_SE[3658] = [-3632,-3631,5780,];
+	w_SE[3659] = [-3632,-3631,5781,];
+	w_SE[3660] = [-3632,-3631,5782,];
+	ItemIdToSetIdMap[5780] = [3658];	// セレスティアルグレネードガン
+	ItemIdToSetIdMap[5781] = [3659];	// セレスティアルブレイド
+	ItemIdToSetIdMap[5782] = [3660];	// セレスティアルロッド
+	CardIdToSetIdMap[3631] = CardIdToSetIdMap[3631].concat([3658,3659,3660]);
+
+	w_SE[3664] = [-4526,-4525,-2891,];
+	CardIdToSetIdMap[4525] = [3664,];
+	w_SE[3665] = [-4528,-4527,-2890,];
+	CardIdToSetIdMap[4527] = [3665,];
+	w_SE[3666] = [-4530,-4529,-2028,];
+	w_SE[3667] = [-4531,-4529,-2662,];
+	CardIdToSetIdMap[4529] = [3666,3667,];
 
 	// <<< INSERT NEW DATA ABOVE THIS LINE >>>
 
 	// itemset はセーブデータに書き出されないので
 	// 現実的な範囲において itemsetID の上限値を気にする必要はありません
-if (typeof window !== 'undefined') {
-    window.ItemIdToSetIdMap = ItemIdToSetIdMap;
-    window.w_SE = w_SE;
-    window.CardIdToSetIdMap = CardIdToSetIdMap;
-    window.PetIdToSetIdMap = PetIdToSetIdMap;
-}

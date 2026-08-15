@@ -8,7 +8,6 @@ import { AutoCalc } from './head.js';
 import { CAttackMethodAreaComponentManager } from './CAttackMethodAreaComponentManager.js';
 import { CSaveController } from './CSaveController.js';
 import { Click_PassSkillSW } from './BuffJobSpecificSelf.js';
-import { Click_Skill3SW } from './BuffMusicAndDance.js';
 import { Click_Skill4SW } from './BuffGuildAndGospel.js';
 import { Click_Skill7SW } from './BuffItemAndFood.js';
 import { Click_Skill8SW } from './BuffOtherCategory.js';
@@ -16,6 +15,15 @@ import { StAllCalc } from '../../../roro/m/js/foot.js';
 import {
     copyAccs, OnChangeArmsTypeRight, OnChangeRefined, OnChangeEquip,
 } from '../../../roro/m/js/equip.js';
+import {
+    EQUIP_REGION_ID_ARMS, EQUIP_REGION_ID_ARMS_LEFT, EQUIP_REGION_ID_HEAD_TOP,
+    EQUIP_REGION_ID_HEAD_MID, EQUIP_REGION_ID_HEAD_UNDER, EQUIP_REGION_ID_SHIELD,
+    EQUIP_REGION_ID_BODY, EQUIP_REGION_ID_SHOULDER, EQUIP_REGION_ID_SHOES,
+    EQUIP_REGION_ID_ACCESSORY_1, EQUIP_REGION_ID_ACCESSORY_2,
+    EQUIP_REGION_ID_SHADOW_ARMS_RIGHT, EQUIP_REGION_ID_SHADOW_ARMS_LEFT,
+    EQUIP_REGION_ID_SHADOW_BODY, EQUIP_REGION_ID_SHADOW_FOOT,
+    EQUIP_REGION_ID_SHADOW_ACCESSORY_1, EQUIP_REGION_ID_SHADOW_ACCESSORY_2,
+} from '../../../roro/m/js/const/EnumEquipRegionId.js';
 import { OnClickQuickControlSW } from '../../../roro/m/js/quickcontrol.js';
 import { OnClickSlotModeButton } from '../../../roro/m/js/slotpager.js';
 import {
@@ -42,7 +50,7 @@ wire('OBJID_BUTTON_OPT_IN_SAVEDATA',      'click', () => optInSavedata());
 
 // クイック設定・スロット切替
 wire('OBJID_QUICK_CONTROL_EXTRACT_CHECKBOX', 'click', OnClickQuickControlSW);
-wire('OBJID_SLOT_MODE_BUTTON',               'click', OnClickSlotModeButton);
+wire('OBJID_SLOT_MODE_BUTTON',               'click', () => OnClickSlotModeButton());
 
 // アクセサリコピー
 wire('OBJID_ACCESSORY_1_COPY', 'click', () => copyAccs(1, 2));
@@ -50,7 +58,6 @@ wire('OBJID_ACCESSORY_2_COPY', 'click', () => copyAccs(2, 1));
 
 // スキルスイッチ（name 属性のみのもの）
 document.querySelector('[name="A1_SKILLSW"]')?.addEventListener('click', Click_PassSkillSW);
-document.querySelector('[name="A3_SKILLSW"]')?.addEventListener('click', Click_Skill3SW);
 document.querySelector('[name="A4_SKILLSW"]')?.addEventListener('click', Click_Skill4SW);
 document.querySelector('[name="A8_SKILLSW"]')?.addEventListener('click', Click_Skill8SW);
 wire('OBJID_CHECK_A7_SKILLSW', 'click', Click_Skill7SW);
@@ -93,33 +100,33 @@ wire('OBJID_SELECT_ARMS_ELEMENT', 'change', AutoCalc);
 
 // 装備選択: OnChangeEquip + AutoCalc
 const equipWithAutoCalc = [
-    ['OBJID_ARMS_RIGHT',   'EQUIP_REGION_ID_ARMS'],
-    ['OBJID_ARMS_LEFT',    'EQUIP_REGION_ID_ARMS_LEFT'],
-    ['OBJID_HEAD_TOP',     'EQUIP_REGION_ID_HEAD_TOP'],
-    ['OBJID_HEAD_MID',     'EQUIP_REGION_ID_HEAD_MID'],
-    ['OBJID_HEAD_UNDER',   'EQUIP_REGION_ID_HEAD_UNDER'],
-    ['OBJID_SHIELD',       'EQUIP_REGION_ID_SHIELD'],
-    ['OBJID_BODY',         'EQUIP_REGION_ID_BODY'],
-    ['OBJID_SHOULDER',     'EQUIP_REGION_ID_SHOULDER'],
-    ['OBJID_SHOES',        'EQUIP_REGION_ID_SHOES'],
-    ['OBJID_ACCESSORY_1',  'EQUIP_REGION_ID_ACCESSORY_1'],
-    ['OBJID_ACCESSORY_2',  'EQUIP_REGION_ID_ACCESSORY_2'],
+    ['OBJID_ARMS_RIGHT',   EQUIP_REGION_ID_ARMS],
+    ['OBJID_ARMS_LEFT',    EQUIP_REGION_ID_ARMS_LEFT],
+    ['OBJID_HEAD_TOP',     EQUIP_REGION_ID_HEAD_TOP],
+    ['OBJID_HEAD_MID',     EQUIP_REGION_ID_HEAD_MID],
+    ['OBJID_HEAD_UNDER',   EQUIP_REGION_ID_HEAD_UNDER],
+    ['OBJID_SHIELD',       EQUIP_REGION_ID_SHIELD],
+    ['OBJID_BODY',         EQUIP_REGION_ID_BODY],
+    ['OBJID_SHOULDER',     EQUIP_REGION_ID_SHOULDER],
+    ['OBJID_SHOES',        EQUIP_REGION_ID_SHOES],
+    ['OBJID_ACCESSORY_1',  EQUIP_REGION_ID_ACCESSORY_1],
+    ['OBJID_ACCESSORY_2',  EQUIP_REGION_ID_ACCESSORY_2],
 ];
-equipWithAutoCalc.forEach(([id, regionName]) => {
-    wire(id, 'change', e => { OnChangeEquip(window[regionName], parseInt(e.target.value)); AutoCalc(); });
+equipWithAutoCalc.forEach(([id, regionId]) => {
+    wire(id, 'change', e => { OnChangeEquip(regionId, parseInt(e.target.value)); AutoCalc(); });
 });
 
 // シャドウ装備選択: OnChangeEquip のみ
 const shadowEquip = [
-    ['OBJID_SHADOW_WEAPON',     'EQUIP_REGION_ID_SHADOW_ARMS_RIGHT'],
-    ['OBJID_SHADOW_SHIELD',     'EQUIP_REGION_ID_SHADOW_ARMS_LEFT'],
-    ['OBJID_SHADOW_BODY',       'EQUIP_REGION_ID_SHADOW_BODY'],
-    ['OBJID_SHADOW_SHOESE',     'EQUIP_REGION_ID_SHADOW_FOOT'],
-    ['OBJID_SHADOW_ACCESSORY1', 'EQUIP_REGION_ID_SHADOW_ACCESSORY_1'],
-    ['OBJID_SHADOW_ACCESSORY2', 'EQUIP_REGION_ID_SHADOW_ACCESSORY_2'],
+    ['OBJID_SHADOW_WEAPON',     EQUIP_REGION_ID_SHADOW_ARMS_RIGHT],
+    ['OBJID_SHADOW_SHIELD',     EQUIP_REGION_ID_SHADOW_ARMS_LEFT],
+    ['OBJID_SHADOW_BODY',       EQUIP_REGION_ID_SHADOW_BODY],
+    ['OBJID_SHADOW_SHOESE',     EQUIP_REGION_ID_SHADOW_FOOT],
+    ['OBJID_SHADOW_ACCESSORY1', EQUIP_REGION_ID_SHADOW_ACCESSORY_1],
+    ['OBJID_SHADOW_ACCESSORY2', EQUIP_REGION_ID_SHADOW_ACCESSORY_2],
 ];
-shadowEquip.forEach(([id, regionName]) => {
-    wire(id, 'change', e => OnChangeEquip(window[regionName], parseInt(e.target.value)));
+shadowEquip.forEach(([id, regionId]) => {
+    wire(id, 'change', e => OnChangeEquip(regionId, parseInt(e.target.value)));
 });
 
 // 攻撃設定

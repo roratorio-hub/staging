@@ -4,6 +4,7 @@ import './CConfBase.js';
 import { CUSTOM_CONF_SPEC_LIMIT } from '../../../ro4/m/js/global.js';
 import { CCharaConfCustomStatus } from './CCharaConfCustomStatus.js';
 import { HtmlCreateElementOption } from '../../common/js/util.js';
+import { CONTROL_TYPE_BLANK, CONTROL_TYPE_SELECTBOX_NUMBER, CONTROL_TYPE_SELECTBOX_SPECIAL } from './const/EnumControlType.js';
 // === END AUTO-GENERATED IMPORTS ===
 
 export function CCharaConfCustomSpecStatus(confArray) {
@@ -309,7 +310,7 @@ export function CCharaConfCustomSpecStatus(confArray) {
 			// 選択セレクトボックスを生成
 			objSelect = document.createElement("select");
 			objSelect.setAttribute("id", controlId);
-			objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + this.instanceNo + ", true)");
+			objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(this.instanceNo, true));
 			objTd.appendChild(objSelect);
 
 			// セレクトオプションを生成

@@ -1,5 +1,4 @@
 // === AUTO-GENERATED IMPORTS ===
-import '../../../roro/m/js/card.h.js';
 import '../../../roro/m/js/common.js';
 import { MigGetBorderFlagText } from '../../../roro/m/js/data/mig.itemsp.h.js';
 import '../../../roro/m/js/rndopttype.h.js';
@@ -8,18 +7,34 @@ import { CARD_ID_NONE, CardObjNew } from '../../../roro/m/js/card.dat.js';
 import { OnChangeCard } from '../../../roro/m/js/equip.js';
 import { RebuildCardSelectSubCollectEnchListData } from '../../../roro/m/js/hmcard.js';
 import { SetUpRndOptKind, SetUpRndOptValue } from '../../../roro/m/js/hmrndopt.js';
-import { ItemObjNew, g_ItemIdArrayByKind } from '../../../roro/m/js/item.dat.js';
+import { ItemObjNew } from '../../../roro/m/js/item.dat.js';
 import { GetRndOptTypeId } from '../../../roro/m/js/item.h.js';
 import { g_rndOptTypeArray } from '../../../roro/m/js/rndopttype.dat.js';
 import { IsMatchJobRestrict } from './data/mig.job.h.js';
 import { HtmlCreateElement, HtmlCreateElementOption, HtmlRemoveAllChild, HtmlSelectObjectValueAsInteger } from '../../../roro/common/js/util.js';
 // === END AUTO-GENERATED IMPORTS ===
+import { registerShadowEquipController } from './CShadowEquipControllerDataBridge.js';
+// C-6: head.js 公開関数（head-bridge 経由）
+import { AutoCalc } from './head-bridge.js';
+// C-6: foot.js 公開関数（foot-bridge 経由）
+import { StAllCalc } from '../../../roro/m/js/foot-bridge.js';
+// C-6: 共有 state 追加分
+import {
+         n_A_JOB,
+} from '../../../roro/m/js/roro-state.js';
+
 
 // gen_imports.py は CShadowEquipController→slotpager→hmrndopt→CShadowEquipController の
 // 循環を検出して slotpager の import をスキップするが、SaveSlotStateCardAll は
 // onChangeShadow（runtime）でのみ参照され module 評価時には未使用のため循環は安全。
 // 自動生成ブロック外に手動で追加し、--force 再生成でも残るようにする。
 import { SaveSlotStateCardAll } from '../../../roro/m/js/slotpager.js';
+import { CARD_DATA_INDEX_NAME } from '../../../roro/m/js/const/EnumCardDataIndex.js';
+import { CONST_DATA_KIND_ENCHANT_LIST } from '../../../roro/m/js/const/EnumConstDataKind.js';
+import { ITEM_DATA_INDEX_ID, ITEM_DATA_INDEX_KANA, ITEM_DATA_INDEX_KIND, ITEM_DATA_INDEX_NAME, ITEM_DATA_INDEX_WPNLV } from '../../../roro/m/js/const/EnumItemDataIndex.js';
+import { ITEM_KIND_SHADOW_ACCESSORY_ON1, ITEM_KIND_SHADOW_ACCESSORY_ON2, ITEM_KIND_SHADOW_ARMS_LEFT, ITEM_KIND_SHADOW_ARMS_RIGHT, ITEM_KIND_SHADOW_BODY, ITEM_KIND_SHADOW_FOOT } from '../../../roro/m/js/const/EnumItemKind.js';
+import { MIG_BORDER_FLAG_ID_OVER } from '../../../roro/m/js/const/EnumMigBorderFlagId.js';
+import { RND_OPT_TYPE_DATA_INDEX_LIST_ID_ARRAY } from '../../../roro/m/js/const/EnumRndOptTypeDataIndex.js';
 
 /**
  * シャドウ装備コントローラクラス.
@@ -105,12 +120,12 @@ export class CShadowEquipController {
 
 	/**
 	 * 有効な装備箇所名の配列を取得する.
-	 * @param {boolean} bDualArms 二刀流フラグ
+	 * @param {boolean} bDualShadowArms 二刀流フラグ
 	 */
 	static getEqprgnNames (bDualShadowArms) {
 
 		// シャドウ装備二刀流の場合
-		if (bDualArms) {
+		if (bDualShadowArms) {
 			// TODO: 現状、そのような仕様はないので、未対応
 			return [
 				this.EQPRGN_NAME_ARMS_RIGHT,
@@ -193,18 +208,38 @@ export class CShadowEquipController {
 		];
 
 		// 装備可能なアイテム配列を用意する
+		// TODO: ItemObjNew を kindId で振り分けて候補配列を作る処理は
+		// equip.js の RebuildArmorsSelect() にも同様のロジックが存在し、DRY 原則に違反している。
+		// 将来的には両者で共通のヘルパー関数（例: kindId 群を受け取り ItemObjNew から
+		// 候補配列を構築する関数）に切り出し、equip.js 側の改修も合わせて行うべき。
 		const itemIdArrayByKind = [];
-		for (let idx = 0; idx < kindIdArray.length; idx++) {
+		for (const kindId of kindIdArray) {
+			itemIdArrayByKind[kindId] = [];
+		}
 
-			const kindId = kindIdArray[idx];
-			const filtered = g_ItemIdArrayByKind[kindId].filter(
-				(itemId) => IsMatchJobRestrict(itemId, n_A_JOB)
-			);
+		for (const itemData of ItemObjNew) {
 
-			// 未選択を追加
-			filtered.unshift(0);
+			if (!itemData) {
+				continue;
+			}
 
-			itemIdArrayByKind[kindId] = filtered;
+			const itemId = itemData[ITEM_DATA_INDEX_ID];
+			const itemKind = itemData[ITEM_DATA_INDEX_KIND];
+
+			if (!itemIdArrayByKind[itemKind]) {
+				continue;
+			}
+
+			if (!IsMatchJobRestrict(itemId, n_A_JOB)) {
+				continue;
+			}
+
+			itemIdArrayByKind[itemKind].push(itemId);
+		}
+
+		// 各部位の先頭に未選択を追加
+		for (const kindId of kindIdArray) {
+			itemIdArrayByKind[kindId].unshift(0);
 		}
 
 		// 各部位を呼び出し
@@ -637,7 +672,5 @@ export class CShadowEquipController {
 
 export const g_shadowEquipController = new CShadowEquipController();
 
-if (typeof window !== 'undefined') {
-    window.g_shadowEquipController = g_shadowEquipController;
-}
+registerShadowEquipController(g_shadowEquipController);
 g_shadowEquipController.initializeHTML();

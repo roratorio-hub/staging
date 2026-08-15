@@ -8,6 +8,16 @@ import { GetElementText, GetRaceText } from './common.js';
 import { MonsterObjNew } from './monster.dat.js';
 import { MONSTER_MAP_ID_MAP_ALL, g_MonsterMapDataArray } from './monstermap.dat.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: head.js 公開関数（head-bridge 経由）
+import {
+         calc,
+} from '../../../ro4/m/js/head-bridge.js';
+import {
+    MONSTER_DATA_EXTRA_INDEX_100HIT, MONSTER_DATA_EXTRA_INDEX_95FLEE, MONSTER_DATA_EXTRA_INDEX_ATK_MAX, MONSTER_DATA_INDEX_BASE_EXP, MONSTER_DATA_INDEX_ELEMENT, MONSTER_DATA_INDEX_HP,
+    MONSTER_DATA_INDEX_ID, MONSTER_DATA_INDEX_JOB_EXP, MONSTER_DATA_INDEX_KANA, MONSTER_DATA_INDEX_NAME, MONSTER_DATA_INDEX_RACE,
+} from './const/EnumMonsterDataIndex.js';
+import { MONSTER_MAP_DATA_INDEX_DATA_ARRAY } from './const/EnumMonsterMapDataIndex.js';
+
 
 /**
  * カスタムセレクトクラス（モンスター）.
@@ -19,6 +29,10 @@ export function CCustomSelectMapMonster (instanceIdNameC, mapSelectC) {
 
 	// マップ選択セレクトクラスのインスタンス
 	this.mapSelect = null;
+
+	// モンスター選択時コールバック（CMonsterMapAreaComponentManager が登録する。
+	// 直接参照すると import 循環になるためコールバック経由で通知する）
+	this.onMonsterSelected = null;
 
 	/**
 	 * イニシャライザ.
@@ -234,7 +248,7 @@ export function CCustomSelectMapMonster (instanceIdNameC, mapSelectC) {
 		CCustomSelectMapMonster.prototype.OnChangeSelectDataSub.call(this);
 		// バリカタ情報をサジェストする
 		const monsterId = this.GetSelectedDataId();
-		CMonsterMapAreaComponentManager.updateMonsterSuggest(monsterId);
+		this.onMonsterSelected?.(monsterId);
 		// 再計算
 		if (this.bRecalculate) {
 			calc();

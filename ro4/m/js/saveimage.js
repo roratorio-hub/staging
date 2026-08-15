@@ -1,5 +1,4 @@
 // === AUTO-GENERATED IMPORTS ===
-import '../../../roro/m/js/card.h.js';
 import { GetElementText } from '../../../roro/m/js/common.js';
 import '../../../roro/m/js/item.h.js';
 import { CardObjNew } from '../../../roro/m/js/card.dat.js';
@@ -10,6 +9,22 @@ import { GetRndOptDispName } from '../../../roro/m/js/rndopt.h.js';
 import { g_equipRndOptTable } from '../../../roro/m/js/rndopttype.h.js';
 import { g_extraInfoDataBridge } from '../../../roro/m/js/CExtraInfoDataBridge.js';
 // === END AUTO-GENERATED IMPORTS ===
+import { getShadowEquippedID, getShadowRefined, getShadowRndOptInfoArray } from '../../../ro4/m/js/CShadowEquipControllerDataBridge.js';
+// C-6: global.js 管理の共有 conf state
+import {
+         n_Nitou,
+} from './global.js';
+
+// C-6: ro4 側共有 state（旧 head.js window 変数）
+import {
+         delayDownForDisp, n_tok, g_perfectHitRate,
+} from './ro4-state.js';
+
+// C-6: 共有 state（旧 foot.js window 変数）
+import {
+         n_A_BodyZokusei,
+} from '../../../roro/m/js/roro-state.js';
+
 // sample
 // https://ragnarokonline.gungho.jp/campaign_event/campaign/baselv220cp-2.html#modal
 // calcx.html?cx1cy1EtMmfo4Owqof.3M4X00cz11.32jYJlE0cz120022jAp3VvR1cz13.4fYl3cz14.4hj1cz15002Edw7Bot9w8cz16002yfJC0xiTd62cz170022j8nn3td2cz18.4fIm3cz19.32dhop8cz1a002GhcqRoQmQ6G8cz1b.4hM1cz1c.4hOacz1d00s0hPgX1h_1cz1e00c0jP1to02cz1f00s0jOfup0z0cz1g00c0jP2vq01cz1h00s0jPjsr0utcz1i.4mcA1Z_1127456b89a3cA128c0cA1vgfdejgh2cB1.sf_V___51d171n5n5nll5dldldl511cC1.ecR1.4S8cU1.cg003cW100Bcl3cZ121
@@ -97,16 +112,16 @@ export function generateImage() {
     return text;
   }
   const shadow_exists = (selector) => {
-    return g_shadowEquipController.getEquippedID(selector) != 0 ? "exists" : "";
+    return getShadowEquippedID(selector) != 0 ? "exists" : "";
   }
   const shadow = (selector) => {
-    const shadow_id = g_shadowEquipController.getEquippedID(selector);
+    const shadow_id = getShadowEquippedID(selector);
     if (shadow_id == 0) {
       return;
     }
-    const refined = g_shadowEquipController.getRefined(selector);
+    const refined = getShadowRefined(selector);
     const shadow_name = ItemObjNew[shadow_id][8];
-    const opt_info = g_shadowEquipController.getRndOptInfoArray(selector)
+    const opt_info = getShadowRndOptInfoArray(selector)
 
     let text = "";
     if (refined != 0) {
@@ -615,6 +630,14 @@ export function generateImage() {
     }
 }
 
-if (typeof window !== 'undefined') {
-    window.generateImage = generateImage;
-}
+import { register } from './engine-registry.js';
+import { ELM_ID_COUNT } from '../../../roro/m/js/const/EnumElmId.js';
+import { CARD_KIND_ENCHANT } from '../../../roro/m/js/const/EnumCardKind.js';
+import { CHARA_DATA_INDEX_CAST_PARAM } from '../../../roro/m/js/const/EnumCharaDataIndex.js';
+import {
+    EQUIP_REGION_ID_ACCESSORY_1, EQUIP_REGION_ID_ACCESSORY_2, EQUIP_REGION_ID_ARMS, EQUIP_REGION_ID_ARMS_LEFT, EQUIP_REGION_ID_BODY, EQUIP_REGION_ID_HEAD_MID,
+    EQUIP_REGION_ID_HEAD_TOP, EQUIP_REGION_ID_HEAD_UNDER, EQUIP_REGION_ID_SHIELD, EQUIP_REGION_ID_SHOES, EQUIP_REGION_ID_SHOULDER,
+} from '../../../roro/m/js/const/EnumEquipRegionId.js';
+import { ITEM_SP_IGNORE_DEF_ALL, ITEM_SP_IGNORE_DEF_RACE_ALL, ITEM_SP_IGNORE_MDEF_ALL, ITEM_SP_IGNORE_MDEF_RACE_ALL, ITEM_SP_KIRI_EFFECT, ITEM_SP_RESIST_ELM_VANITY } from '../../../roro/m/js/const/EnumItemSpId.js';
+import { RND_OPT_DATA_INDEX_SPID } from '../../../roro/m/js/const/EnumRndOptDataIndex.js';
+register('generateImage', generateImage);

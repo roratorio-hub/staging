@@ -3,10 +3,24 @@ import './common.js';
 import { g_charaData } from '../../../ro4/m/js/global.js';
 import { GetEquipRndOptTableKind, GetEquipRndOptTableValue, SetEquipRndOptTable } from './rndopttype.h.js';
 import { HtmlGetElementById, HtmlCreateElement, HtmlSetAttribute, HtmlCreateElementOption, HtmlRemoveFromParent, HtmlGetSelectedOptgroup, HtmlGetObjectValueByIdAsInteger, HtmlSetObjectValueById, SetStatefullData, GetStatefullData } from '../../common/js/util.js';
-import { CardShortObj, RebuildCardSelect, SetCardSlotEnabilityAll } from './hmcard.js';
+import { ApplyCardShort, CardShortObj, RebuildCardSelect, SetCardSlotEnabilityAll } from './hmcard.js';
+import { OnChangeCard, OnChangeCostume } from './equip.js';
 import { RebuildCostumeSelect, SetCostumeSlotEnabilityAll } from './hmcostume.js';
 import { GetObjectIdRndOptKind, GetObjectIdRndOptKindTD, GetObjectIdRndOptValue, GetObjectIdRndOptValueTD, RebuildRndOptSelect, SetRndOptEnablityAll, SetUpRndOptValue } from './hmrndopt.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: global.js 管理の共有 conf state
+import {
+         n_Nitou,
+} from '../../../ro4/m/js/global.js';
+// C-6: head.js 公開関数（head-bridge 経由）
+import { AutoCalc } from '../../../ro4/m/js/head-bridge.js';
+import {
+    EQUIP_REGION_ID_ACCESSORY_1, EQUIP_REGION_ID_ACCESSORY_2, EQUIP_REGION_ID_ARMS, EQUIP_REGION_ID_ARMS_LEFT, EQUIP_REGION_ID_BODY, EQUIP_REGION_ID_HEAD_MID,
+    EQUIP_REGION_ID_HEAD_TOP, EQUIP_REGION_ID_HEAD_UNDER, EQUIP_REGION_ID_SHADOW_ACCESSORY_1, EQUIP_REGION_ID_SHADOW_ACCESSORY_2, EQUIP_REGION_ID_SHADOW_ARMS_LEFT, EQUIP_REGION_ID_SHADOW_ARMS_RIGHT,
+    EQUIP_REGION_ID_SHADOW_BODY, EQUIP_REGION_ID_SHADOW_FOOT, EQUIP_REGION_ID_SHIELD, EQUIP_REGION_ID_SHOES, EQUIP_REGION_ID_SHOULDER,
+} from './const/EnumEquipRegionId.js';
+import { RND_OPT_SLOT_COUNT } from './const/EnumRndOptTypeDataIndex.js';
+
 //================================================================================================
 //
 // 定数定義
@@ -514,7 +528,7 @@ export function __RebuildSlotAsCard(eqpRgnId, objidPrifix) {
 		// カード選択セレクトボックス
 		objSelect = HtmlCreateElement("select", objTd);
 		HtmlSetAttribute(objSelect, "id", objidPrifix + "_CARD_" + idx);
-		HtmlSetAttribute(objSelect, "onChange", "OnChangeCard(this.value) | AutoCalc()");
+		objSelect.addEventListener("change", (e) => { OnChangeCard(e.currentTarget.value); AutoCalc(); });
 
 		// カード選択セレクトボックスの再構築
 		itemId = GetStatefullData("DATA_" + objidPrifix, 0);
@@ -533,9 +547,6 @@ export function __RebuildSlotAsCard(eqpRgnId, objidPrifix) {
  * @return なし
  ************************************************************************************************/
 export function __RebuildSlotAsCardShort(eqpRgnId, objidPrifix) {
-
-	var strOnChange = "";
-	strOnChange = "ApplyCardShort(" + eqpRgnId + ", \"" + objidPrifix + "\")";
 
 	var objRoot = null;
 	var objTd = null;
@@ -572,7 +583,7 @@ export function __RebuildSlotAsCardShort(eqpRgnId, objidPrifix) {
 	// カード選択セレクトボックス
 	objSelect = HtmlCreateElement("select", objTd);
 	HtmlSetAttribute(objSelect, "id", objidPrifix + "_CARD_SHORT");
-	HtmlSetAttribute(objSelect, "onChange", strOnChange + "| AutoCalc()");
+	objSelect.addEventListener("change", () => { ApplyCardShort(eqpRgnId, objidPrifix); AutoCalc(); });
 	if (bVisible) {
 		objSelect.removeAttribute("disabled");
 		objSelect.setAttribute("style", "visibility : visible");
@@ -997,7 +1008,7 @@ export function __RebuildSlotAsCostume(eqpRgnId, objidPrifix, jobId) {
 		// 衣装選択セレクトボックス
 		objSelect = HtmlCreateElement("select", objTd);
 		HtmlSetAttribute(objSelect, "id", objidPrifix + "_COSTUME");
-		HtmlSetAttribute(objSelect, "onChange", "OnChangeCostume(this.value)");
+		objSelect.addEventListener("change", (e) => { OnChangeCostume(e.currentTarget.value); });
 
 		// 衣装選択セレクトボックスの再構築
 		itemId = GetStatefullData("DATA_" + objidPrifix, 0);

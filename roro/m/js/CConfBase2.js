@@ -4,6 +4,15 @@ import './CConfBase.js';
 import { COLOR_CODE_TABLE_HEADER_IS_NOT_SET, COLOR_CODE_TABLE_HEADER_IS_SET } from './common.js';
 import { HtmlCreateElement, HtmlCreateTextNode, HtmlCreateElementOption, HtmlRemoveAllChild, HtmlGetObjectCheckedById, ValueRangeModify } from '../../common/js/util.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: head.js 公開関数（head-bridge 経由）
+import {
+         calc,
+} from '../../../ro4/m/js/head-bridge.js';
+import {
+    CONTROL_TYPE_CHECKBOX, CONTROL_TYPE_CHECKBOX_SPECIAL, CONTROL_TYPE_DUMMY, CONTROL_TYPE_NUMBER, CONTROL_TYPE_SELECT, CONTROL_TYPE_SELECTBOX_NUMBER,
+    CONTROL_TYPE_SELECTBOX_PERCENT, CONTROL_TYPE_SELECTBOX_SPECIAL, CONTROL_TYPE_SPECIAL, CONTROL_TYPE_TEXT, CONTROL_TYPE_TEXTBOX_NUMBER, CONTROL_TYPE_TEXTBOX_SPECIAL,
+} from './const/EnumControlType.js';
+
 
 /**
  * 選択肢データクラス.
@@ -479,7 +488,7 @@ export function CConfBase2(confMngParam) {
 		objInput = document.createElement("input");
 		objInput.setAttribute("id", this.GetSwitchIdString(instanceNo));
 		objInput.setAttribute("type", "checkbox");
-		objInput.setAttribute("onClick", "CConfBase2.OnClickSwitchHandler("+ instanceNo + ")");
+		objInput.addEventListener("click", () => CConfBase2.OnClickSwitchHandler(instanceNo));
 		if (bAsExpand) {
 			objInput.checked = "checked";
 		}
@@ -515,6 +524,10 @@ export function CConfBase2(confMngParam) {
 			// データ取得
 			confData = this.confDataObj[idx];
 
+			// イベントリスナーのクロージャ用に現在のインデックスを固定
+			// （idx は var 宣言でループ間共有されるため、直接キャプチャすると最終値を見てしまう）
+			const confIdx = idx;
+
 			// 所定の項目数ごとに行を変える
 			if (idx % this.itemInRow == 0) {
 				// 設定欄用のテーブル行を生成
@@ -541,7 +554,7 @@ export function CConfBase2(confMngParam) {
 				objInput.setAttribute("id", controlId + "_TEXT");
 				objInput.setAttribute("type", "button");
 				objInput.setAttribute("value", confData.text);
-				objInput.setAttribute("onclick", "CConfBase2.OnClickTextButtonHandler(" + instanceNo + ", " + idx + ")");
+				objInput.addEventListener("click", () => CConfBase2.OnClickTextButtonHandler(instanceNo, confIdx));
 			}
 			else {
 				confText = confData.text;
@@ -585,7 +598,7 @@ export function CConfBase2(confMngParam) {
 				// 選択セレクトボックスを生成
 				objSelect = document.createElement("select");
 				objSelect.setAttribute("id", controlId);
-				objSelect.setAttribute("onChange", "CConfBase2.OnChangeValueHandler(" + instanceNo + ", " + idx + ", true)");
+				objSelect.addEventListener("change", () => CConfBase2.OnChangeValueHandler(instanceNo, confIdx, true));
 				objTd.appendChild(objSelect);
 
 				// 範囲定義に従い、セレクトオプションを生成
@@ -607,7 +620,7 @@ export function CConfBase2(confMngParam) {
 				// 選択セレクトボックスを生成
 				objSelect = HtmlCreateElement("select", objTd);
 				objSelect.setAttribute("id", controlId);
-				objSelect.setAttribute("onchange", "CConfBase2.OnChangeValueHandler(" + instanceNo + ", " + idx + ", true)");
+				objSelect.addEventListener("change", () => CConfBase2.OnChangeValueHandler(instanceNo, confIdx, true));
 
 				// 選択肢定義に従い、セレクトオプションを生成
 				for (idxOption = 0; idxOption < confData.selectDataArray.length; idxOption++) {
@@ -628,7 +641,7 @@ export function CConfBase2(confMngParam) {
 				objInput = document.createElement("input");
 				objInput.setAttribute("id", controlId);
 				objInput.setAttribute("type", "checkbox");
-				objInput.setAttribute("onChange", "CConfBase2.OnChangeValueHandler(" + instanceNo + ", " + idx + ", true)");
+				objInput.addEventListener("change", () => CConfBase2.OnChangeValueHandler(instanceNo, confIdx, true));
 				objTd.appendChild(objInput);
 
 				// 初期値設定
@@ -647,7 +660,7 @@ export function CConfBase2(confMngParam) {
 				objInput.setAttribute("type", "text");
 				objInput.setAttribute("id", controlId);
 				objInput.setAttribute("size", "6");
-				objInput.setAttribute("onChange", "CConfBase2.OnChangeValueHandler(" + instanceNo + ", " + idx + ", true)");
+				objInput.addEventListener("change", () => CConfBase2.OnChangeValueHandler(instanceNo, confIdx, true));
 				objTd.appendChild(objInput);
 
 				// 初期値設定
@@ -664,7 +677,7 @@ export function CConfBase2(confMngParam) {
 				objInput.setAttribute("type", "text");
 				objInput.setAttribute("id", controlId);
 				objInput.setAttribute("size", "32");
-				objInput.setAttribute("onChange", "CConfBase2.OnChangeValueHandler(" + instanceNo + ", " + idx + ", true)");
+				objInput.addEventListener("change", () => CConfBase2.OnChangeValueHandler(instanceNo, confIdx, true));
 
 				// 初期値設定
 				objInput.setAttribute("value", confData.defaultValue);
@@ -680,7 +693,7 @@ export function CConfBase2(confMngParam) {
 				objInput.setAttribute("type", "number");
 				objInput.setAttribute("id", controlId);
 				objInput.setAttribute("size", "18");
-				objInput.setAttribute("onchange", "CConfBase2.OnChangeValueHandler(" + instanceNo + ", " + idx + ", true)");
+				objInput.addEventListener("change", () => CConfBase2.OnChangeValueHandler(instanceNo, confIdx, true));
 
 				// 値の範囲設定
 				objInput.setAttribute("min", confData.minValue);
@@ -1298,11 +1311,4 @@ export function CConfBase2(confMngParam) {
 	}
 }
 
-if (typeof window !== 'undefined') {
-    window.CConfBaseSelectData = CConfBaseSelectData;
-    window.CConfBaseConfData = CConfBaseConfData;
-    window.CConfBaseRegisterParam = CConfBaseRegisterParam;
-    window.CConfBaseManagementParam = CConfBaseManagementParam;
-    window.CConfBase2 = CConfBase2;
-}
 

@@ -1,5 +1,6 @@
 // === AUTO-GENERATED IMPORTS ===
-import './card.h.js';
+import { n_A_Equip, n_A_card } from './roro-state.js';
+import { g_attackMethodBridge } from './CAttackMethodDataBridge.js';
 import { MigGetBorderFlagText } from './data/mig.itemsp.h.js';
 import { g_constDataManager } from '../../../ro4/m/js/global.js';
 import {
@@ -58,6 +59,30 @@ import { MIG_ENCH_LIST_ID_SHINENNO_KAIRO_UPGRADE, MIG_ENCH_LIST_ID_SHINENTAIBUKI
 import { SLOT_INDEX_CARD_MIN, SLOT_INDEX_CARD_MAX } from './slotpager.js';
 import { HtmlGetElementById, HtmlCreateElement, HtmlCreateElementOption, HtmlRemoveAllChild, HtmlGetObjectValueById, HtmlSetObjectValueById, SetStatefullData } from '../../common/js/util.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: global.js 管理の共有 conf state
+import {
+         n_Nitou,
+} from '../../../ro4/m/js/global.js';
+// C-6: foot.js 公開関数（foot-bridge 経由）
+import { StAllCalc } from './foot-bridge.js';
+import { CARD_DATA_INDEX_NAME } from './const/EnumCardDataIndex.js';
+import {
+    CARD_KIND_ACCESSORY, CARD_KIND_ACCESSORY_ON1, CARD_KIND_ACCESSORY_ON2, CARD_KIND_ARMS, CARD_KIND_BODY, CARD_KIND_FOOT,
+    CARD_KIND_HEAD, CARD_KIND_MID, CARD_KIND_NONE, CARD_KIND_SHIELD, CARD_KIND_SHOULDER, CARD_KIND_TOP,
+} from './const/EnumCardKind.js';
+import { CONST_DATA_KIND_ENCHANT_LIST } from './const/EnumConstDataKind.js';
+import {
+    EQUIP_REGION_ID_ACCESSORY_1, EQUIP_REGION_ID_ACCESSORY_2, EQUIP_REGION_ID_ARMS, EQUIP_REGION_ID_ARMS_LEFT, EQUIP_REGION_ID_BODY, EQUIP_REGION_ID_HEAD_MID,
+    EQUIP_REGION_ID_HEAD_TOP, EQUIP_REGION_ID_HEAD_UNDER, EQUIP_REGION_ID_SHIELD, EQUIP_REGION_ID_SHOES, EQUIP_REGION_ID_SHOULDER,
+} from './const/EnumEquipRegionId.js';
+import { ITEM_DATA_INDEX_SLOT } from './const/EnumItemDataIndex.js';
+import { MIG_BORDER_FLAG_ID_OVER } from './const/EnumMigBorderFlagId.js';
+import {
+    MIG_EQUIPABLE_SP_ATTRIBUTE_ID_BORDER_BASE, MIG_EQUIPABLE_SP_ATTRIBUTE_ID_BORDER_FLAG, MIG_EQUIPABLE_SP_ATTRIBUTE_ID_CARD, MIG_EQUIPABLE_SP_ATTRIBUTE_ID_SLOT, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_EFFECT_LIST, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_ENCHANT,
+    MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SELECT, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SLOT, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SLOT_V2, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SLOT_V3, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SLOT_V4, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_STAGE,
+    MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_STAGE_V2, MIG_EQUIPABLE_SP_LIST_DATA_ID_REFINE_CONDITION, MIG_EQUIPABLE_SP_LIST_DATA_ID_REFINE_CONDITION_V2, MIG_EQUIPABLE_SP_LIST_DATA_ID_REFINE_CONDITION_V3,
+} from './const/EnumMigEquipableSpId.js';
+
 
 export const CardShortObj =[
 	 [
@@ -1597,17 +1622,11 @@ export function ApplyCardShort(eqpRgnId, objidPrifix) {
 	StAllCalc();
 
 	// 攻撃手段の更新
-	CAttackMethodAreaComponentManager.RebuildControls();
+	g_attackMethodBridge.rebuildControls?.();
 
 	// 検索可能リスト更新
 	LoadTomSelect();
 }
 
-/* window compat — dewindow フェーズで除去予定 */
-if (typeof window !== 'undefined') {
-    Object.assign(window, {
-        ApplyCardShort,
-    });
-}
 
 

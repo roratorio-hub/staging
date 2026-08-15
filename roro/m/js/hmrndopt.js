@@ -1,12 +1,12 @@
 // === AUTO-GENERATED IMPORTS ===
 import './common.js';
-import './rndoptlist.h.js';
 import {
          HtmlCreateElement, HtmlCreateElementOption, HtmlGetElementById,
          HtmlGetObjectValueByIdAsInteger, HtmlRemoveOptionAll, HtmlSetAttribute,
          HtmlSetObjectValueById
 } from '../../common/js/util.js';
 import { OnChangeRandomEnchant } from './equip.js';
+import { isShadowEquipAvailable } from '../../../ro4/m/js/CShadowEquipControllerDataBridge.js';
 import { ItemObjNew } from './item.dat.js';
 import { GetRndOptTypeId } from './item.h.js';
 import { g_rndOptArray } from './rndopt.dat.js';
@@ -15,6 +15,44 @@ import { g_rndOptListArray } from './rndoptlist.dat.js';
 import { g_rndOptTypeArray } from './rndopttype.dat.js';
 import { GetEquipRndOptTableKind, GetEquipRndOptTableValue, SetEquipRndOptTable } from './rndopttype.h.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: global.js 管理の共有 conf state
+import {
+         n_Nitou,
+} from '../../../ro4/m/js/global.js';
+
+// C-6: foot.js 公開関数（foot-bridge 経由）
+import {
+         IsMatchSpDefId, CheckSpDefFriendlyOver, CheckSpDefBaseLvOver, CheckSpDefJobRestrict,
+         CheckSpDefPureStatus, CheckSpDefRefineOver,
+} from './foot-bridge.js';
+// Phase B: window.AutoCalc 廃止に伴い head-bridge 経由に移行
+import { AutoCalc } from '../../../ro4/m/js/head-bridge.js';
+
+// C-6: ro4 側共有 state（旧 head.js window 変数）
+import {
+         n_A_BaseLV,
+} from '../../../ro4/m/js/ro4-state.js';
+
+// C-6: 共有 state（旧 foot.js window 変数）
+import {
+         SU_STR, n_A_HEAD_DEF_PLUS, n_A_BODY_DEF_PLUS, n_A_SHIELD_DEF_PLUS,
+         n_A_SHOULDER_DEF_PLUS, n_A_SHOES_DEF_PLUS, n_A_Weapon_ATKplus, n_A_Weapon2_ATKplus,
+         g_refinedArray,
+         SU_AGI, SU_VIT, SU_DEX, SU_INT, SU_LUK,
+} from './roro-state.js';
+import { PARAM_DEX, PARAM_VIT } from './const/EnumParamId.js';
+import {
+    EQUIP_REGION_ID_ACCESSORY_1, EQUIP_REGION_ID_ACCESSORY_2, EQUIP_REGION_ID_ARMS, EQUIP_REGION_ID_ARMS_LEFT, EQUIP_REGION_ID_BODY, EQUIP_REGION_ID_HEAD_MID,
+    EQUIP_REGION_ID_HEAD_TOP, EQUIP_REGION_ID_HEAD_UNDER, EQUIP_REGION_ID_SHADOW_ACCESSORY_1, EQUIP_REGION_ID_SHADOW_ACCESSORY_2, EQUIP_REGION_ID_SHADOW_ARMS_LEFT, EQUIP_REGION_ID_SHADOW_ARMS_RIGHT,
+    EQUIP_REGION_ID_SHADOW_BODY, EQUIP_REGION_ID_SHADOW_FOOT, EQUIP_REGION_ID_SHIELD, EQUIP_REGION_ID_SHOES, EQUIP_REGION_ID_SHOULDER, EnumEquipRegionId,
+} from './const/EnumEquipRegionId.js';
+import { ITEM_DATA_INDEX_WPNLV } from './const/EnumItemDataIndex.js';
+import { ITEM_SP_BASE_LV_BY_1_OFFSET, ITEM_SP_PURE_STR_BY_10_OFFSET, ITEM_SP_REFINE_BY_1_OFFSET } from './const/EnumItemSpId.js';
+import { RND_OPT_DATA_INDEX_ID, RND_OPT_DATA_INDEX_MAX, RND_OPT_DATA_INDEX_MIN, RND_OPT_DATA_INDEX_SPECIAL_FLAG, RND_OPT_DATA_INDEX_SPID, RND_OPT_DATA_INDEX_STEP } from './const/EnumRndOptDataIndex.js';
+import { RND_OPT_LIST_DATA_INDEX_OPT_ID_ARRAY } from './const/EnumRndOptListDataIndex.js';
+import { RND_OPT_SPECIAL_FLAG_ONOFF } from './const/EnumRndOptSpecialFlag.js';
+import { RND_OPT_SLOT_COUNT, RND_OPT_TYPE_DATA_INDEX_LIST_ID_ARRAY } from './const/EnumRndOptTypeDataIndex.js';
+
 
 
 export function GetObjectPrefixRndOpt(eqpRgnId) {
@@ -198,7 +236,7 @@ export function CreateRndOptKind(objRoot, eqpRgnId, slotIndex) {
 
 	objSelect = HtmlCreateElement("select", objTd);
 	HtmlSetAttribute(objSelect, "id", objIdKind);
-	HtmlSetAttribute(objSelect, "onChange", "OnChangeRndOptKind(" + eqpRgnId + ", " + slotIndex + ") | AutoCalc()");
+	objSelect.addEventListener("change", () => { OnChangeRndOptKind(eqpRgnId, slotIndex); AutoCalc(); });
 
 	return objSelect;
 }
@@ -223,7 +261,7 @@ export function CreateRndOptValue(objRoot, eqpRgnId, slotIndex) {
 
 	objSelect = HtmlCreateElement("select", objTd);
 	HtmlSetAttribute(objSelect, "id", objIdValue);
-	HtmlSetAttribute(objSelect, "onChange", "OnChangeRandomEnchant() | AutoCalc()");
+	objSelect.addEventListener("change", () => { OnChangeRandomEnchant(); AutoCalc(); });
 
 	return objSelect;
 }
@@ -524,7 +562,7 @@ export function GetRndOptTotalValue(spid, invalidItemIdArray, bListUp) {
 		listUpArray = listUpArray.concat(GetRndOptValue(EQUIP_REGION_ID_ACCESSORY_1, spid, invalidItemIdArray, bListUp));
 		listUpArray = listUpArray.concat(GetRndOptValue(EQUIP_REGION_ID_ACCESSORY_2, spid, invalidItemIdArray, bListUp));
 
-		if ((typeof g_shadowEquipController) !== "undefined") {
+		if (isShadowEquipAvailable()) {
 			listUpArray = listUpArray.concat(GetRndOptValue(EQUIP_REGION_ID_SHADOW_ARMS_RIGHT, spid, invalidItemIdArray, bListUp));
 			listUpArray = listUpArray.concat(GetRndOptValue(EQUIP_REGION_ID_SHADOW_ARMS_LEFT, spid, invalidItemIdArray, bListUp));
 			listUpArray = listUpArray.concat(GetRndOptValue(EQUIP_REGION_ID_SHADOW_BODY, spid, invalidItemIdArray, bListUp));
@@ -551,7 +589,7 @@ export function GetRndOptTotalValue(spid, invalidItemIdArray, bListUp) {
 		spVal += GetRndOptValue(EQUIP_REGION_ID_ACCESSORY_1, spid, invalidItemIdArray, bListUp);
 		spVal += GetRndOptValue(EQUIP_REGION_ID_ACCESSORY_2, spid, invalidItemIdArray, bListUp);
 
-		if ((typeof g_shadowEquipController) !== "undefined") {
+		if (isShadowEquipAvailable()) {
 			spVal += GetRndOptValue(EQUIP_REGION_ID_SHADOW_ARMS_RIGHT, spid, invalidItemIdArray, bListUp);
 			spVal += GetRndOptValue(EQUIP_REGION_ID_SHADOW_ARMS_LEFT, spid, invalidItemIdArray, bListUp);
 			spVal += GetRndOptValue(EQUIP_REGION_ID_SHADOW_BODY, spid, invalidItemIdArray, bListUp);
@@ -716,10 +754,10 @@ export function GetRndOptValue(eqpRgnId, spid, invalidItemIdArray, bListUp) {
 			spValPureStatus = Math.floor(pureParamArray[spDefPureStatusBy - 1] / 10);
 		}
 		else if (7 == spDefPureStatusBy) {
-			spValPureStatus = pureStatusValue[PARAM_DEX];
+			spValPureStatus = pureParamArray[PARAM_DEX];
 		}
 		else if (8 == spDefPureStatusBy) {
-			spValPureStatus = pureStatusValue[PARAM_VIT];
+			spValPureStatus = pureParamArray[PARAM_VIT];
 		}
 		spDefRemain = spDefRemain % ITEM_SP_PURE_STR_BY_10_OFFSET;
 
@@ -778,10 +816,4 @@ export function GetRndOptValue(eqpRgnId, spid, invalidItemIdArray, bListUp) {
 	}
 }
 
-/* window compat — dewindow フェーズで除去予定 */
-if (typeof window !== 'undefined') {
-    Object.assign(window, {
-        OnChangeRndOptKind,
-    });
-}
 

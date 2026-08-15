@@ -1,5 +1,5 @@
 // === AUTO-GENERATED IMPORTS ===
-import './card.h.js';
+import { n_A_Equip, n_A_card } from './roro-state.js';
 import './common.js';
 import './item.h.js';
 import './skill.h.js';
@@ -9,7 +9,20 @@ import { UpdateLearnedSkillNotice } from './equip.js';
 import { ItemObjNew } from './item.dat.js';
 import { SkillObjNew } from './skill.dat.js';
 import { HtmlCreateElement, HtmlCreateTextNode } from '../../common/js/util.js';
+import { RegisterLearnedSkillSearch } from './skill-search-bridge.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: 共有 state 追加分
+import {
+         n_A_JOB,
+} from './roro-state.js';
+// C-6: head.js 公開関数（head-bridge 経由）
+import { AutoCalc } from '../../../ro4/m/js/head-bridge.js';
+import { CARD_DATA_INDEX_SPBEGIN } from './const/EnumCardDataIndex.js';
+import { CONST_DATA_KIND_JOB } from './const/EnumConstDataKind.js';
+import { ITEM_DATA_INDEX_SPBEGIN } from './const/EnumItemDataIndex.js';
+import { ITEM_SP_END, ITEM_SP_LEARNED_SKILL_EFFECT } from './const/EnumItemSpId.js';
+import { SKILL_DATA_INDEX_MAXLV, SKILL_DATA_INDEX_NAME, SKILL_DATA_INDEX_REFID } from './const/EnumSkillDataIndex.js';
+
 /**
  * 習得スキル欄の生成・更新・サーチなどの関数群
  */
@@ -25,6 +38,9 @@ for (let dmyidx = 0; dmyidx < LEARNED_SKILL_MAX_COUNT; dmyidx++) {
  * @param {Number} skillId 取得したいスキルのID
  * @returns {Number} スキルLv
  */
+// CSkillManager のスキル計算式から呼べるように注入する（循環 import 回避）
+RegisterLearnedSkillSearch((...a) => LearnedSkillSearch(...a));
+
 export function LearnedSkillSearch(skillId) {
 	// 設定可能な全ての習得スキルを取得する
 	const learnSkillIdArray = g_constDataManager.GetDataObject(CONST_DATA_KIND_JOB, n_A_JOB).GetLearnSkillIdArray();
@@ -148,9 +164,10 @@ export function OnClickSkillSWLearned(){
 		try{
 			url = new URL($("#ID_SKILL_LEARNED_URL").val()||location.href);
 			showLoadingIndicator();
-			// 自動再計算を ON にしていると項目変更のたびに計算されて待ち時間がかさむ事があります
-			// 待機中を示すスピナーもあるため深刻な問題ではないと認識していますが
-			// 問題が表面化した場合には自動再計算の例外処理などを検討してください
+			// 各 select に値を反映したあと AutoCalc をまとめて 1 回だけ呼ぶ。
+			// 注意: jQuery の .change() はネイティブ addEventListener('change') ハンドラを
+			// 発火させないため、状態更新（n_A_LearnedSkill）と着色は
+			// RefreshSkillColumnHeaderLearned を直接呼んで行う（第4引数で AutoCalc を抑止）。
 			setTimeout(() => {
 				$("#ID_SKILL_LEARNED select").each(function(idx,elm) {
 					const id_skill_name = $(elm).attr("id").replace("SELECT","TD").replace("LEVEL","NAME");
@@ -160,8 +177,14 @@ export function OnClickSkillSWLearned(){
 					if (skill) {
 						skill_level = url.searchParams.get(skill[SKILL_DATA_INDEX_REFID])||0;
 					}
-					$(this).val(skill_level).change();
+					$(this).val(skill_level);
+					// id 末尾の数値が n_A_LearnedSkill のインデックス
+					const learnedIdx = parseInt($(elm).attr("id").replace("OBJID_SELECT_LEARNED_SKILL_LEVEL_", ""), 10);
+					// 状態更新・着色のみ（AutoCalc はループ後に1回だけ）
+					RefreshSkillColumnHeaderLearned(this, learnedIdx, this.value, true);
 				});
+				// まとめて1回だけ再計算
+				AutoCalc("OnClickSkillLearnedLoad");
 				hideLoadingIndicator();
 			},0); // ローディングインジケータ表示のために 0 ms後の非同期処理に送る
 		} catch(e) {}
@@ -201,12 +224,11 @@ export function OnClickSkillSWLearned(){
 		objSelect.addEventListener('change', (e) => RefreshSkillColumnHeaderLearned(e.target, idx, e.target.value));
 
 		// RTX API用の属性追加
-		const skillData = SkillMap.getByMigIdNum(skillId);
-		if (skillData) {
-			objSelect.setAttribute("data-rtx-learned-skill-id", skillData.getId());
-		} else {
-			// SkillMapに存在しないスキルはdata-skill-name属性を付与せず、警告ログを出す
-			console.warn("SkillMap not found skillId=", skillId, SkillObjNew[skillId]);
+		// スキル文字列ID（"SM_BASH" 等）の正本は skill.dat.js の REFID。
+		// REFID を持たないスキル（「通常攻撃」等）は従来通り属性を付与しない。
+		const skillRefId = SkillObjNew[skillId][SKILL_DATA_INDEX_REFID];
+		if (skillRefId) {
+			objSelect.setAttribute("data-rtx-learned-skill-id", skillRefId);
 		}
 
 		objTd.appendChild(objSelect);
@@ -307,14 +329,18 @@ export function UpdateLearnedSkillSettingColoring() {
 
 /**
  * 習得スキルの変更を反映する
- * @param {*} objSelect 
- * @param {*} changedIdx 
- * @param {*} newValue 
+ * @param {*} objSelect
+ * @param {*} changedIdx
+ * @param {*} newValue
+ * @param {boolean} [bSuppressAutoCalc=false] true のとき状態更新・着色のみ行い AutoCalc を呼ばない
+ *        （URL一括ロードのように複数 select をまとめて反映してから AutoCalc を1回だけ呼びたい場合に使う）
  */
-export function RefreshSkillColumnHeaderLearned(objSelect, changedIdx, newValue) {
+export function RefreshSkillColumnHeaderLearned(objSelect, changedIdx, newValue, bSuppressAutoCalc = false) {
 	if (0 <= changedIdx) {
 		n_A_LearnedSkill[changedIdx] = parseInt(newValue);
-		AutoCalc("RefreshSkillColumnHeaderLearned");
+		if (!bSuppressAutoCalc) {
+			AutoCalc("RefreshSkillColumnHeaderLearned");
+		}
 	}
 	// 背景設定
 	if (objSelect) {
@@ -344,8 +370,4 @@ export function RefreshSkillColumnHeaderLearned(objSelect, changedIdx, newValue)
 	}
 	objText = document.createTextNode(sUsedText);
 	objUsedText.appendChild(objText);
-}
-
-if (typeof window !== 'undefined') {
-    window.LearnedSkillSearch = LearnedSkillSearch;
 }

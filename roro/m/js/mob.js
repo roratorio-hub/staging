@@ -42,9 +42,58 @@ import {
 import { CCharaConfNizi } from './CCharaConfNizi.js';
 import { CCharaConfSanzi } from './CCharaConfSanzi.js';
 import { SKILL_ID_EXPIATIO, SKILL_ID_HAKKEI } from './skill.dat.js';
-import { UsedSkillSearch, n_A_PassSkill3, n_A_PassSkill8 } from '../../../ro4/m/js/skillstate.js';
+import { UsedSkillSearch, n_A_PassSkill8 } from '../../../ro4/m/js/skillstate.js';
 import { GetMobConfInput } from './CMobConfInput.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: global.js 管理の共有 conf state
+import {
+         g_confDataNizi, g_confDataSanzi,
+} from '../../../ro4/m/js/global.js';
+
+// C-6: foot.js 公開関数（foot-bridge 経由）
+import {
+         ROUNDDOWN,
+} from './foot-bridge.js';
+
+// C-6: 旧 head.js の window 経由共有スクラッチ変数（宣言忘れ関数の var-leak 対応・ファイルローカル化）
+let B_Total_DEF = 0;
+let B_Total_MDEF = 0;
+
+// C-6: ro4 側共有 state（旧 head.js window 変数）
+import {
+         n_SiegeMode, n_A_ActiveSkill, n_tok,
+} from '../../../ro4/m/js/ro4-state.js';
+
+// C-6: 共有 state（旧 foot.js window 変数）
+import {
+         n_A_JobLV, n_A_INT,
+} from './roro-state.js';
+import { ELM_ID_UNDEAD } from './const/EnumElmId.js';
+import { RACE_ID_DEMON, RACE_ID_UNDEAD } from './const/EnumRaceId.js';
+import {
+    ITEM_SP_EXP_UP_ALL, ITEM_SP_EXP_UP_RACE_SOLID, ITEM_SP_IGNORE_DEF_ALL, ITEM_SP_IGNORE_DEF_BOSS, ITEM_SP_IGNORE_DEF_NOTBOSS, ITEM_SP_IGNORE_DEF_RACE_ALL,
+    ITEM_SP_IGNORE_DEF_RACE_SOLID, ITEM_SP_IGNORE_MDEF_ALL, ITEM_SP_IGNORE_MDEF_BOSS, ITEM_SP_IGNORE_MDEF_NOTBOSS, ITEM_SP_IGNORE_MDEF_RACE_ALL, ITEM_SP_IGNORE_MDEF_RACE_SOLID,
+    ITEM_SP_KIRI_EFFECT,
+} from './const/EnumItemSpId.js';
+import {
+    MOB_CONF_INPUT_DATA_INDEX_AGI, MOB_CONF_INPUT_DATA_INDEX_ATK, MOB_CONF_INPUT_DATA_INDEX_BASE_EXP, MOB_CONF_INPUT_DATA_INDEX_BOSS_TYPE, MOB_CONF_INPUT_DATA_INDEX_DEF, MOB_CONF_INPUT_DATA_INDEX_DEX,
+    MOB_CONF_INPUT_DATA_INDEX_ELEMENT, MOB_CONF_INPUT_DATA_INDEX_GRASS_TYPE, MOB_CONF_INPUT_DATA_INDEX_HP, MOB_CONF_INPUT_DATA_INDEX_INT, MOB_CONF_INPUT_DATA_INDEX_JOB_EXP, MOB_CONF_INPUT_DATA_INDEX_LUK,
+    MOB_CONF_INPUT_DATA_INDEX_LV, MOB_CONF_INPUT_DATA_INDEX_MATK, MOB_CONF_INPUT_DATA_INDEX_MDEF, MOB_CONF_INPUT_DATA_INDEX_MRES, MOB_CONF_INPUT_DATA_INDEX_RACE, MOB_CONF_INPUT_DATA_INDEX_RANGE,
+    MOB_CONF_INPUT_DATA_INDEX_RES, MOB_CONF_INPUT_DATA_INDEX_SIZE, MOB_CONF_INPUT_DATA_INDEX_STR, MOB_CONF_INPUT_DATA_INDEX_VIT,
+} from './const/EnumMobConfId.js';
+import { MONSTER_BOSSTYPE_NONE } from './const/EnumMonsterBossType.js';
+import {
+    MONSTER_DATA_EXTRA_INDEX_100HIT, MONSTER_DATA_EXTRA_INDEX_95FLEE, MONSTER_DATA_EXTRA_INDEX_ATK_MAX, MONSTER_DATA_EXTRA_INDEX_ATK_MIN, MONSTER_DATA_EXTRA_INDEX_DEF_MINUS_MAX, MONSTER_DATA_EXTRA_INDEX_DEF_MINUS_MIN,
+    MONSTER_DATA_EXTRA_INDEX_FLEE, MONSTER_DATA_EXTRA_INDEX_HIT, MONSTER_DATA_EXTRA_INDEX_MATK_MAX, MONSTER_DATA_EXTRA_INDEX_MATK_MIN, MONSTER_DATA_EXTRA_INDEX_MDEF_MINUS, MONSTER_DATA_INDEX_AGI,
+    MONSTER_DATA_INDEX_ATK, MONSTER_DATA_INDEX_BASE_EXP, MONSTER_DATA_INDEX_BOSS_TYPE, MONSTER_DATA_INDEX_DEF_DIV, MONSTER_DATA_INDEX_DEF_DIV_IGNORE_BUFF, MONSTER_DATA_INDEX_DEX,
+    MONSTER_DATA_INDEX_ELEMENT, MONSTER_DATA_INDEX_GRASS_TYPE, MONSTER_DATA_INDEX_HP, MONSTER_DATA_INDEX_ID, MONSTER_DATA_INDEX_INT, MONSTER_DATA_INDEX_JOB_EXP,
+    MONSTER_DATA_INDEX_LEVEL, MONSTER_DATA_INDEX_LUK, MONSTER_DATA_INDEX_MATK, MONSTER_DATA_INDEX_MDEF_DIV, MONSTER_DATA_INDEX_MDEF_DIV_IGNORE_BUFF, MONSTER_DATA_INDEX_MRES,
+    MONSTER_DATA_INDEX_NAME, MONSTER_DATA_INDEX_QUALIFIED, MONSTER_DATA_INDEX_RACE, MONSTER_DATA_INDEX_RANGE, MONSTER_DATA_INDEX_RES, MONSTER_DATA_INDEX_SIZE,
+    MONSTER_DATA_INDEX_STR, MONSTER_DATA_INDEX_VIT,
+} from './const/EnumMonsterDataIndex.js';
+import { MONSTER_ELM_EARTH_1, MONSTER_ELM_WATER_1 } from './const/EnumMonsterElement.js';
+import { SIZE_ID_MEDIUM, SIZE_ID_SMALL } from './const/EnumSizeId.js';
+
 /**
  * モンスター基本情報を取得する
  * @param {number} monsterId 
@@ -1409,16 +1458,6 @@ export function GetMobDataParameters(monsterId, mobData){
 		mobData[MONSTER_DATA_INDEX_JOB_EXP] = Math.floor(mobData[MONSTER_DATA_INDEX_JOB_EXP] * ratio / 100);
 	}
 
-	//----------------------------------------------------------------
-	// 「演奏/踊り系スキル　ニヨルドの宴」の効果
-	//----------------------------------------------------------------
-	if (n_A_PassSkill3[8]) {
-		if (mobData[MONSTER_DATA_INDEX_BOSS_TYPE] == MONSTER_BOSSTYPE_NONE) {
-			ratio = 125 + 11 * n_A_PassSkill3[8];
-			mobData[MONSTER_DATA_INDEX_BASE_EXP] = Math.floor(mobData[MONSTER_DATA_INDEX_BASE_EXP] * ratio / 100);
-			mobData[MONSTER_DATA_INDEX_JOB_EXP] = Math.floor(mobData[MONSTER_DATA_INDEX_JOB_EXP] * ratio / 100);
-		}
-	}
 
 	return mobData;
 }

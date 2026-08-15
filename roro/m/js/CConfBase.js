@@ -1,31 +1,15 @@
-import { CGlobalConstManager } from './CGlobalConstManager.js';
+import { g_attackMethodBridge } from './CAttackMethodDataBridge.js';
 // === AUTO-GENERATED IMPORTS ===
 import { COLOR_CODE_TABLE_HEADER_IS_NOT_SET, COLOR_CODE_TABLE_HEADER_IS_SET } from './common.js';
 import { HtmlCreateElement, HtmlCreateTextNode, HtmlCreateElementOption, HtmlRemoveAllChild, HtmlGetObjectCheckedById, ValueRangeModify } from '../../common/js/util.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: head.js 公開関数（head-bridge 経由）
+import { AutoCalc } from '../../../ro4/m/js/head-bridge.js';
+import {
+    CONTROL_TYPE_BLANK, CONTROL_TYPE_CHECKBOX, CONTROL_TYPE_CHECKBOX_SPECIAL, CONTROL_TYPE_DUMMY, CONTROL_TYPE_SELECTBOX_NUMBER, CONTROL_TYPE_SELECTBOX_PERCENT,
+    CONTROL_TYPE_SELECTBOX_SPECIAL, CONTROL_TYPE_SPECIAL, CONTROL_TYPE_TEXTBOX_NUMBER, CONTROL_TYPE_TEXTBOX_SPECIAL, CONTROL_TYPE_TEXT_NODE,
+} from './const/EnumControlType.js';
 
-// コントロール種別定義
-CGlobalConstManager.DefineEnum(
-	"EnumControlType",
-	[
-		"CONTROL_TYPE_DUMMY",
-		"CONTROL_TYPE_BLANK",
-		"CONTROL_TYPE_TEXT_NODE",			// 固定テキスト表示
-		"CONTROL_TYPE_SELECTBOX_NUMBER",
-		"CONTROL_TYPE_SELECTBOX_PERCENT",
-		"CONTROL_TYPE_SELECTBOX_SPECIAL",
-		"CONTROL_TYPE_CHECKBOX",
-		"CONTROL_TYPE_CHECKBOX_SPECIAL",
-		"CONTROL_TYPE_TEXTBOX_NUMBER",
-		"CONTROL_TYPE_TEXTBOX_SPECIAL",
-		"CONTROL_TYPE_SELECT",				// select	// ConfBase2 系のみ実装
-		"CONTROL_TYPE_TEXT",				// input type=text		// ConfBase2 系のみ実装
-		"CONTROL_TYPE_NUMBER",				// input type=number	// ConfBase2 系のみ実装
-		"CONTROL_TYPE_SPECIAL",
-	],
-	0,
-	1
-);
 
 /**
  * データ管理用クラス.
@@ -225,7 +209,7 @@ export function CConfBase(confArray) {
 		objInput = document.createElement("input");
 		objInput.setAttribute("id", this.GetSwitchIdString(instanceNo));
 		objInput.setAttribute("type", "checkbox");
-		objInput.setAttribute("onClick", "CConfBase.OnClickSwitchHandler("+ instanceNo + ")");
+		objInput.addEventListener("click", () => CConfBase.OnClickSwitchHandler(instanceNo));
 		if (bAsExpand) {
 			objInput.setAttribute("checked", "checked");
 		}
@@ -325,7 +309,7 @@ export function CConfBase(confArray) {
 					// 選択セレクトボックスを生成
 					objSelect = document.createElement("select");
 					objSelect.setAttribute("id", controlId);
-					objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + instanceNo + ", true)");
+					objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(instanceNo, true));
 					objTd.appendChild(objSelect);
 					// 範囲定義に従い、セレクトオプションを生成
 					controlValueMin = this.confDataObj[idx][CConfBase.CONF_DATA_INDEX_MIN_VALUE];
@@ -350,7 +334,7 @@ export function CConfBase(confArray) {
 					objInput = document.createElement("input");
 					objInput.setAttribute("id", controlId);
 					objInput.setAttribute("type", "checkbox");
-					objInput.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + instanceNo + ", true)");
+					objInput.addEventListener("change", () => CConfBase.OnChangeValueHandler(instanceNo, true));
 					objTd.appendChild(objInput);
 
 					// 初期値設定
@@ -373,7 +357,7 @@ export function CConfBase(confArray) {
 					objInput.setAttribute("type", "text");
 					objInput.setAttribute("id", controlId);
 					objInput.setAttribute("size", "6");
-					objInput.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + instanceNo + ", true)");
+					objInput.addEventListener("change", () => CConfBase.OnChangeValueHandler(instanceNo, true));
 					objTd.appendChild(objInput);
 
 					// 初期値設定
@@ -594,7 +578,7 @@ export function CConfBase(confArray) {
 			}
 		}
 		// 攻撃手段の更新
-		CAttackMethodAreaComponentManager.RebuildControls();
+		g_attackMethodBridge.rebuildControls?.();
 	}
 
 	/**
@@ -739,7 +723,4 @@ export function CConfBase(confArray) {
 	}
 }
 
-if (typeof window !== 'undefined') {
-    window.CConfBase = CConfBase;
-}
 

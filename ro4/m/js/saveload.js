@@ -5,7 +5,7 @@ import { CSaveController } from './CSaveController.js';
 import { g_skillManager } from './global.js';
 import { CItemInfoManager } from '../../../roro/m/js/CItemInfoManager.js';
 import { CSaveDataConverter } from '../../../roro/m/js/CSaveDataConverter.js';
-import { CSaveDataMappingManager } from '../../../roro/m/js/CSaveDataMappingManager.js';
+import { CSaveDataMappingManager, CURRENT_VERSION } from '../../../roro/m/js/CSaveDataMappingManager.js';
 import { GetSaveDataVersion, VersionModify } from '../../../roro/m/js/saveload.js';
 import { HtmlGetObjectValueById, HtmlGetObjectValueByIdAsInteger, HtmlSetObjectValueById, MallocArray } from '../../../roro/common/js/util.js';
 // === END AUTO-GENERATED IMPORTS ===
@@ -367,7 +367,6 @@ export function OnClickConfirmDialogSwitch() {
 	CSaveController.setSettingProp(CSaveDataConst.propNameConfirmDialogSwitch, status);
 }
 
-if (typeof window !== 'undefined') {
-    window.OnClickUrlOutMIG = OnClickUrlOutMIG;
-    window.ConvertDataTextMIG = ConvertDataTextMIG;
-}
+import { register } from './engine-registry.js';
+register('OnClickUrlOutMIG', OnClickUrlOutMIG);
+register('ConvertDataTextMIG', ConvertDataTextMIG);

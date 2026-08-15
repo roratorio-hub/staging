@@ -2,6 +2,7 @@ import { CConfBase } from './CConfBase.js';
 // === AUTO-GENERATED IMPORTS ===
 import './CConfBase.js';
 import { HtmlCreateElementOption } from '../../common/js/util.js';
+import { CONTROL_TYPE_CHECKBOX, CONTROL_TYPE_DUMMY, CONTROL_TYPE_SELECTBOX_NUMBER, CONTROL_TYPE_SELECTBOX_SPECIAL } from './const/EnumControlType.js';
 // === END AUTO-GENERATED IMPORTS ===
 
 export function CCharaConfSanzi(confArray) {
@@ -583,7 +584,7 @@ export function CCharaConfSanzi(confArray) {
 				// 選択セレクトボックスを生成
 				objSelect = document.createElement("select");
 				objSelect.setAttribute("id", controlId);
-				objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + this.instanceNo + ", true)");
+				objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(this.instanceNo, true));
 				objTd.appendChild(objSelect);
 				// セレクトオプションを生成
 				objOption = HtmlCreateElementOption(0, "off", objSelect);
@@ -604,7 +605,7 @@ export function CCharaConfSanzi(confArray) {
 				// 選択セレクトボックスを生成
 				objSelect = document.createElement("select");
 				objSelect.setAttribute("id", controlId);
-				objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + this.instanceNo + ", true)");
+				objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(this.instanceNo, true));
 				objTd.appendChild(objSelect);
 				// セレクトオプションを生成
 				objOption = HtmlCreateElementOption(0, "off", objSelect);
@@ -626,7 +627,7 @@ export function CCharaConfSanzi(confArray) {
 				// 選択セレクトボックスを生成
 				objSelect = document.createElement("select");
 				objSelect.setAttribute("id", controlId);
-				objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + this.instanceNo + ", true)");
+				objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(this.instanceNo, true));
 				objTd.appendChild(objSelect);
 				// セレクトオプションを生成
 				for (var loopIdx = 0; loopIdx <= 18; loopIdx++) {

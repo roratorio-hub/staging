@@ -1,5 +1,4 @@
 // === AUTO-GENERATED IMPORTS ===
-import '../../m/js/card.h.js';
 import '../../m/js/common.js';
 import '../../m/js/data/mig.itemsp.h.js';
 import { g_constDataManager } from '../../../ro4/m/js/global.js';
@@ -28,9 +27,22 @@ import { GetItemKindNameText } from '../../m/js/item.h.js';
 import { MIG_ENCH_LIST_ID_SHINENNO_KAIRO_UPGRADE, MIG_ENCH_LIST_ID_SHINENTAIBUKI_UPGRADE } from '../../m/js/data/mig.enchlist.dat.js';
 import { SLOT_INDEX_CARD_MIN, SLOT_INDEX_CARD_MAX } from '../../m/js/slotpager.js';
 import { HtmlRemoveOptionAll, HtmlCreateElementOption, HtmlRemoveAllChild } from '../../common/js/util.js';
+import { CARD_DATA_INDEX_ID, CARD_DATA_INDEX_KIND, CARD_DATA_INDEX_NAME } from '../../m/js/const/EnumCardDataIndex.js';
+import {
+    CARD_KIND_ACCESSORY, CARD_KIND_ACCESSORY_ON1, CARD_KIND_ACCESSORY_ON2, CARD_KIND_ANY, CARD_KIND_ARMS, CARD_KIND_BODY,
+    CARD_KIND_ENCHANT, CARD_KIND_FOOT, CARD_KIND_HEAD, CARD_KIND_MID, CARD_KIND_SHIELD, CARD_KIND_SHOULDER,
+    CARD_KIND_TOP, CARD_KIND_UNDER,
+} from '../../m/js/const/EnumCardKind.js';
+import { CONST_DATA_KIND_ENCHANT_LIST } from '../../m/js/const/EnumConstDataKind.js';
+import { ITEM_DATA_INDEX_KIND, ITEM_DATA_INDEX_NAME } from '../../m/js/const/EnumItemDataIndex.js';
+import {
+    MIG_EQUIPABLE_SP_ATTRIBUTE_ID_BORDER_BASE, MIG_EQUIPABLE_SP_ATTRIBUTE_ID_BORDER_FLAG, MIG_EQUIPABLE_SP_ATTRIBUTE_ID_CARD, MIG_EQUIPABLE_SP_ATTRIBUTE_ID_SLOT, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_EFFECT_LIST, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_ENCHANT,
+    MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SELECT, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SLOT, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SLOT_V2, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SLOT_V3, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_SLOT_V4, MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_STAGE,
+    MIG_EQUIPABLE_SP_LIST_DATA_ID_ENCHANT_POSITION_NTH_STAGE_V2, MIG_EQUIPABLE_SP_LIST_DATA_ID_REFINE_CONDITION, MIG_EQUIPABLE_SP_LIST_DATA_ID_REFINE_CONDITION_V2, MIG_EQUIPABLE_SP_LIST_DATA_ID_REFINE_CONDITION_V3,
+} from '../../m/js/const/EnumMigEquipableSpId.js';
 // === END AUTO-GENERATED IMPORTS ===
 // 定数定義
-window.CARD_KIND_DMY_FOR_ALL = -1;
+const CARD_KIND_DMY_FOR_ALL = -1;
 
 // 初期処理の実行
 export function OnLoadCardList () {
@@ -489,22 +501,6 @@ export function OnChangeShowEnchantInfo() {
 }
 
 
-/*
-	以下、slotpager.js からコピペ。
-*/
-
-window.SLOTPAGER_MODE_CARD = 0;
-window.SLOTPAGER_MODE_RNDENCH = 1;
-window.SLOTPAGER_MODE_RNDOPT = 1;		// 1 のエイリアス
-
-window.SLOT_INDEX_CARD_MIN = 1;
-window.SLOT_INDEX_CARD_MAX = 4;
-
-window.SLOT_INDEX_COSTUME_MIN = 1;
-window.SLOT_INDEX_COSTUME_MAX = 1;
-
-window.SLOT_INDEX_RNDENCH_MIN = 1;
-window.SLOT_INDEX_RNDENCH_MAX = 5;
 
 
 /*
@@ -667,7 +663,7 @@ export function RebuildCardSelectSubCollectEnchListDataSubUpgradeShinennoKairo(e
 
 	var funcPushNotExist = function (cardIdF) {
 
-		for (idxF = 0; idxF < resultArray.length; idxF++) {
+		for (let idxF = 0; idxF < resultArray.length; idxF++) {
 			if (resultArray[idxF][1] == cardIdF) {
 				return;
 			}
@@ -739,7 +735,7 @@ export function RebuildCardSelectSubCollectEnchListDataSubUpgradeShinentaiBuki(e
 
 	var funcPushNotExist = function (cardIdF) {
 
-		for (idxF = 0; idxF < resultArray.length; idxF++) {
+		for (let idxF = 0; idxF < resultArray.length; idxF++) {
 			if (resultArray[idxF][1] == cardIdF) {
 				return;
 			}

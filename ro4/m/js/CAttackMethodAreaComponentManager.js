@@ -1,4 +1,3 @@
-import { CGlobalConstManager } from '../../../roro/m/js/CGlobalConstManager.js';
 // === AUTO-GENERATED IMPORTS ===
 import '../../../roro/m/js/common.js';
 import '../../../roro/m/js/item.h.js';
@@ -6,7 +5,8 @@ import { n_A_PassSkill7 } from './BuffItemAndFood.js';
 import { UsedSkillSearch } from './BuffJobSpecificSelf.js';
 import { CSaveController } from './CSaveController.js';
 import { g_constDataManager, g_skillManager } from './global.js';
-import { AutoCalc, CanonOBJ, KunaiOBJ, SyurikenOBJ, calc } from './head.js';
+import { AutoCalc, calc } from './head-bridge.js';
+import { CanonOBJ, KunaiOBJ, SyurikenOBJ } from './attackmethod.dat.js';
 import { CSaveDataConst } from './savedata/CSaveDataConst.js';
 import { CAttackMethodConf } from '../../../roro/m/js/CAttackMethodConf.js';
 import { CCharaConfYozi } from '../../../roro/m/js/CCharaConfYozi.js';
@@ -24,12 +24,13 @@ import {
          USABEL_SKILL_ID_MAGMA_ILLUPTION_3, USABEL_SKILL_ID_METALIC_SOUND_3,
          USABEL_SKILL_ID_METEOR_STORM_5, USABEL_SKILL_ID_PSYCHIC_WAVE_3,
          USABEL_SKILL_ID_RESERECTION_BY_YGGDRASILLNO_HA, USABEL_SKILL_ID_SOUL_STRIKE_5,
-         USABEL_SKILL_ID_TEIOAPUCHAGI_7
-} from '../../../roro/m/js/usableskill.dat.js';
+         USABEL_SKILL_ID_TEIOAPUCHAGI_7,
+         } from '../../../roro/m/js/usableskill.dat.js';
 import { USABLE_SKILL_ID_CUSTOM_BIAS } from '../../../roro/m/js/usableskill.h.js';
 import { GetHigherJobSeriesID, GetLowerJobSeriesID, IsSameJobClass } from './data/mig.job.h.js';
 import { HtmlCreateElement, HtmlCreateTextNode, HtmlCreateElementOption, HtmlRemoveAllChild, HtmlGetObjectCheckedById, HtmlSetObjectCheckedById, HtmlGetObjectValueByIdAsInteger, HtmlSetObjectValueById } from '../../../roro/common/js/util.js';
 import { MIG_JOB_ID_BIOLO, MIG_JOB_ID_DRAGON_KNIGHT, MIG_JOB_ID_MEISTER, MIG_JOB_ID_SPIRIT_HANDLER } from './data/mig.job.dat.js';
+import { g_attackMethodBridge } from '../../../roro/m/js/CAttackMethodDataBridge.js';
 import {
          SKILL_ID_ABYSS_SQUARE, SKILL_ID_ACIDIFIED_ZONE_CHI, SKILL_ID_ACIDIFIED_ZONE_HI,
          SKILL_ID_ACIDIFIED_ZONE_KAZE, SKILL_ID_ACIDIFIED_ZONE_MIZU,
@@ -90,22 +91,42 @@ import {
          SKILL_ID_TENGETSU, SKILL_ID_TENRACHIMO, SKILL_ID_TETRA_BOLTEX,
          SKILL_ID_TUZYO_KOGEKI, SKILL_ID_VERATURE_SPEAR, SKILL_ID_VIGILANT_AT_NIGHT,
          SKILL_ID_WATER_DRAGON_BREATH, SKILL_ID_WILD_FIRE, SKILL_ID_WUG_BITE,
-         SKILL_ID_YOMIGAESHI, SKILL_ID_ZIRAISHIN, SKILL_ID_ZYUMONZIGIRI
+         SKILL_ID_YOMIGAESHI, SKILL_ID_ZIRAISHIN, SKILL_ID_ZYUMONZIGIRI,
+         SKILL_ID_ABYSS_FLAME, SKILL_ID_ALPHA_CLAW, SKILL_ID_BLAZING_FLAME_BLAST, SKILL_ID_CHASING_BREAK,
+         SKILL_ID_CHASING_SHOT, SKILL_ID_CROSS_SLASH, SKILL_ID_DIVINUS_FLOS, SKILL_ID_DRAGONIC_PIERCE,
+         SKILL_ID_DUST_EXPLOSION, SKILL_ID_EARTH_DRILL, SKILL_ID_EARTH_STAMP, SKILL_ID_FERAL_CLAW,
+         SKILL_ID_FRENZY_FANG, SKILL_ID_GLACIER_SHARD, SKILL_ID_HYUN_ROK_SPIRIT_POWER, SKILL_ID_ICE_PILLAR,
+         SKILL_ID_IMPERIAL_CROSS, SKILL_ID_PINION_SHOT, SKILL_ID_POWERFUL_SWING, SKILL_ID_PRIMAL_CLAW,
+         SKILL_ID_QUILL_SPEAR, SKILL_ID_RADIANT_SPEAR, SKILL_ID_RHYTHMICAL_WAVE, SKILL_ID_ROARING_CHARGE,
+         SKILL_ID_ROARING_PIERCER, SKILL_ID_SAVAGE_LUNGE, SKILL_ID_SOLID_STOMP, SKILL_ID_TEMPEST_FLAP,
+         SKILL_ID_TENSE, SKILL_ID_TERRA_HARVEST, SKILL_ID_TERRA_WAVE, SKILL_ID_THUNDERING_CALL,
+         SKILL_ID_THUNDERING_FOCUS, SKILL_ID_THUNDERING_ORB,
 } from '../../../roro/m/js/skill.dat.js';
 // === END AUTO-GENERATED IMPORTS ===
-//----------------------------------------------------------------
-// オプションリストの種別
-//----------------------------------------------------------------
-CGlobalConstManager.DefineEnum(
-	"EnumAttackMethodOptionListType",
-	[
-		"ATTACK_METHOD_OPTION_LIST_TYPE_SELECT",
-		"ATTACK_METHOD_OPTION_LIST_TYPE_INPUT",
-	],
-	0,
-	1
-);
+// C-6: JOB 定数
+import {
+         JOB_SERIES_ID_ROGUE,
+} from './data/mig.job.h.js';
 
+// C-6: 共有 state 追加分
+import {
+         n_A_JOB,
+} from '../../../roro/m/js/roro-state.js';
+
+// C-6: foot.js 公開関数（foot-bridge 経由）
+import {
+         GetEquippedSPListEquip, GetEquippedSPValueArrayEquip, GetEquippedSPListCardAndElse, GetEquippedSPValueArrayCardAndElse,
+} from '../../../roro/m/js/foot-bridge.js';
+import {
+    ELM_ID_DARK, ELM_ID_EARTH, ELM_ID_FIRE, ELM_ID_HOLY, ELM_ID_PSYCO, ELM_ID_VANITY,
+    ELM_ID_WATER, ELM_ID_WIND,
+} from '../../../roro/m/js/const/EnumElmId.js';
+import { ATTACK_METHOD_OPTION_LIST_TYPE_INPUT, ATTACK_METHOD_OPTION_LIST_TYPE_SELECT } from '../../../roro/m/js/const/EnumAttackMethodOptionListType.js';
+import { ATTACK_METHOD_SOURCE_TYPE_AUTO_SPELL, ATTACK_METHOD_SOURCE_TYPE_JOB_LEARN, ATTACK_METHOD_SOURCE_TYPE_USABLE_SKILL } from '../../../roro/m/js/const/EnumAttackMethodSource.js';
+import { AUTO_SPELL_DATA_INDEX_ATTACKABLE, AUTO_SPELL_DATA_INDEX_SKILL_ID, AUTO_SPELL_DATA_INDEX_SKILL_LEVEL } from '../../../roro/m/js/const/EnumAutoSpellDataIndex.js';
+import { CONST_DATA_KIND_JOB } from '../../../roro/m/js/const/EnumConstDataKind.js';
+import { ITEM_SP_AUTO_SPELL, ITEM_SP_AUTO_SPELL_HIDDEN_DETAIL, ITEM_SP_AUTO_SPELL_LEVEL_UNSPECIFIED, ITEM_SP_LEARN_SKILL, ITEM_SP_LEARN_SKILL_HIDDEN_DETAIL, ITEM_SP_LEARN_SKILL_LEVEL_UNSPECIFIED } from '../../../roro/m/js/const/EnumItemSpId.js';
+import { USABLE_SKILL_DATA_INDEX_ATTACKABLE, USABLE_SKILL_DATA_INDEX_SKILL_ID, USABLE_SKILL_DATA_INDEX_SKILL_LEVEL } from '../../../roro/m/js/const/EnumUsableSkillDataIndex.js';
 
 /**
  * 攻撃手段オプションデータクラス.
@@ -1520,13 +1541,6 @@ CAttackMethodAreaComponentManager.GetEffectiveAttackMethodDataArray = function (
 			USABEL_SKILL_ID_JUDEX_3,
 			USABEL_SKILL_ID_TEIOAPUCHAGI_7,
 		]);
-	}
-
-	// 四次職支援「攻撃装置有効化」による効果
-	// オートスペルだと、遠距離攻撃でも加算されてしまうので、実情に合わなくなる
-	// （自身中心に毎秒ダメージなので、遠距離から攻撃している場合、ダメージは入らない）
-	if ((bufLv = g_confDataYozi[CCharaConfYozi.CONF_ID_KOGEKI_SOCHI_YUKOKA]) > 0) {
-		usableSkillIdArray.push(USABEL_SKILL_ID_KOGEKI_SOCHI_YUKOKA_5);
 	}
 
 	for (idx = 0; idx < usableSkillIdArray.length; idx++) {
@@ -3452,49 +3466,6 @@ CAttackMethodAreaComponentManager.GetEffectiveAttackMethodDataArraySubExtractOpt
 				);
 				break;
 
-
-			//----------------------------------------------------------------
-			// シャドウクロス：シャドウスタブ
-			//----------------------------------------------------------------
-			case SKILL_ID_SHADOW_STAB:
-
-				// オプションリストを生成、追加
-				attackMethodOptList = funcCreateOptionList(attackMethodOptList,
-					"クローキングエクシード",
-					[
-						[0, "なし"],
-						[1, "あり"],
-					],
-					0
-				);
-				break;
-
-
-			//----------------------------------------------------------------
-			// シャドウクロス：インパクトクレーター
-			//----------------------------------------------------------------
-			case SKILL_ID_IMPACT_CRATER:
-
-				// オプションリストを生成、追加
-				attackMethodOptList = funcCreateOptionList(attackMethodOptList,
-					"回転カウンター",
-					[
-						[1, "1"],
-						[2, "2"],
-						[3, "3"],
-						[4, "4"],
-						[5, "5"],
-						[6, "6"],
-						[7, "7"],
-						[8, "8"],
-						[9, "9"],
-						[10, "10"],
-					],
-					10
-				);
-				break;
-
-
 			//----------------------------------------------------------------
 			// ウィンドホーク：クレッシブボルト
 			//----------------------------------------------------------------
@@ -4019,21 +3990,6 @@ CAttackMethodAreaComponentManager.GetEffectiveAttackMethodDataArraySubExtractOpt
 				break;
 
 			//----------------------------------------------------------------
-			// マイスター：攻撃装置有効化
-			//----------------------------------------------------------------
-			case SKILL_ID_KOGEKI_SOCHI_YUKOKA:
-				// オプションリストを生成、追加
-				attackMethodOptList = funcCreateOptionListAsInput(attackMethodOptList,
-					"マイスターのPOW",
-					[
-						["type", "number"],
-						["min", 0],
-						["max", 500],
-					],
-					0
-				);
-				break;
-			//----------------------------------------------------------------
 			// アークビショップ：アドラムス
 			//----------------------------------------------------------------
 			case SKILL_ID_ADORAMUS:
@@ -4339,6 +4295,18 @@ CAttackMethodAreaComponentManager.GetEffectiveAttackMethodDataArraySubExtractOpt
 					0
 				);
 				break;
+			
+			// 天星
+			case SKILL_ID_TENSE:
+				attackMethodOptList = funcCreateOptionList(attackMethodOptList,
+					"命中率",
+					[
+						[0, "全弾命中"],
+						[1, "半分"],
+					],
+					0
+				);
+				break;
 
 		}
 	}
@@ -4430,6 +4398,8 @@ CAttackMethodAreaComponentManager.CreateNoticeBlock = function () {
 // TODO: 現状、呼び出しに任せる
 // CAttackMethodAreaComponentManager.RebuildControls();
 
-if (typeof window !== 'undefined') {
-    window.CAttackMethodAreaComponentManager = CAttackMethodAreaComponentManager;
-}
+// roro 側ファイル（equip / hmcard / CConfBase / saveload）向けのブリッジ登録。
+// 直接 import は head.js への static import パスを生むため不可（reference.md 参照）
+g_attackMethodBridge.rebuildControls = () => CAttackMethodAreaComponentManager.RebuildControls();
+g_attackMethodBridge.getAttackMethodConf = () => CAttackMethodAreaComponentManager.GetAttackMethodConf();
+g_attackMethodBridge.setAttackMethodConf = (conf) => CAttackMethodAreaComponentManager.SetAttackMethodConf(conf);

@@ -1,9 +1,26 @@
 // === AUTO-GENERATED IMPORTS ===
-import './costume.h.js';
 import { COSTUME_REGION_ID_HEAD_UNDER } from './common.js';
 import { CostumeOBJ } from './costume.dat.js';
 import { HtmlGetElementById, HtmlCreateElementOption, HtmlRemoveAllChild, HtmlSetObjectValueById, SetStatefullData } from '../../common/js/util.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: global.js 管理の共有 conf state
+import {
+         g_constDataManager,
+         n_Nitou,
+} from '../../../ro4/m/js/global.js';
+
+// C-6: 共有 state（旧 foot.js window 変数）
+import {
+         n_A_costume,
+} from './roro-state.js';
+import { CONST_DATA_KIND_JOB } from './const/EnumConstDataKind.js';
+import { COSTUME_DATA_INDEX_EQPFLG, COSTUME_DATA_INDEX_ID, COSTUME_DATA_INDEX_KANA, COSTUME_DATA_INDEX_KIND, COSTUME_DATA_INDEX_NAME } from './const/EnumCostumeDataIndex.js';
+import { COSTUME_KIND_HEAD_UNDER } from './const/EnumCostumeKind.js';
+import {
+    EQUIP_REGION_ID_ACCESSORY_1, EQUIP_REGION_ID_ACCESSORY_2, EQUIP_REGION_ID_ARMS, EQUIP_REGION_ID_ARMS_LEFT, EQUIP_REGION_ID_BODY, EQUIP_REGION_ID_HEAD_MID,
+    EQUIP_REGION_ID_HEAD_TOP, EQUIP_REGION_ID_HEAD_UNDER, EQUIP_REGION_ID_SHIELD, EQUIP_REGION_ID_SHOES, EQUIP_REGION_ID_SHOULDER,
+} from './const/EnumEquipRegionId.js';
+
 
 
 /************************************************************************************************
@@ -192,7 +209,8 @@ export function BuildUpCostumeSlotsCostume(eqpRgnId, itemId, objArySlots, jobId)
 	if (typeof jobId === "undefined" || jobId === null) {
 		jobId = document.getElementById("OBJID_SELECT_JOB").value;
 	}
-	let jobData = JobMap.getById(jobId);
+	// セレクトボックスの value は mig ID の数値文字列
+	let jobData = g_constDataManager.GetDataObject(CONST_DATA_KIND_JOB, parseInt(jobId, 10));
 
 	var idx = 0;
 	var idxEquipable = 0;

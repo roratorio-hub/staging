@@ -1,10 +1,13 @@
 // === AUTO-GENERATED IMPORTS ===
+import { n_A_Equip } from '../../../roro/m/js/roro-state.js';
+import { SaveSystem } from '../../../roro/m/js/saveload-bridge.js';
 import '../../../roro/m/js/common.js';
 import '../../../roro/m/js/data/mig.itemsp.h.js';
 import '../../../roro/m/js/item.h.js';
 import '../../../roro/m/js/monster.h.js';
-import { GetStatusMax, IsDualArmsJob, IsReincarnatedJob, IsSameJobGroup, IsYojiJob } from './data/mig.job.h.js';
+import { GetBaseLevelMax, GetBaseLevelMin, GetStatusMax, IsDualArmsJob, IsReincarnatedJob, IsSameJobGroup, IsYojiJob } from './data/mig.job.h.js';
 import { CSaveDataConst } from './savedata/CSaveDataConst.js';
+import { CSaveController } from './CSaveController.js';
 import { HtmlGetObjectValueByIdAsInteger, ValueRangeModify, myInnerHtml } from '../../../roro/common/js/util.js';
 import { CCharaConfCustomSpecStatus } from '../../../roro/m/js/CCharaConfCustomSpecStatus.js';
 import { CCharaConfNizi } from '../../../roro/m/js/CCharaConfNizi.js';
@@ -16,7 +19,7 @@ import {
          ITEM_ID_MICHINARU_SHUCHUNO_BOOTS, ITEM_ID_MICHINARU_SOZONO_BOOTS,
          ITEM_ID_NOEQUIP_SHIELD
 } from '../../../roro/m/js/item.dat.js';
-import { LEARNED_SKILL_MAX_COUNT, LearnedSkillSearch, OnClickSkillSWLearned } from '../../../roro/m/js/learnedskill.js';
+import { LEARNED_SKILL_MAX_COUNT, LearnedSkillSearch, OnClickSkillSWLearned, n_A_LearnedSkill } from '../../../roro/m/js/learnedskill.js';
 import { MOB_CONF_DEBUF_ID_JACK_FROST_NOVA, MOB_CONF_DEBUF_ID_TOXIN_OF_MANDARA, n_B_IJYOU } from '../../../roro/m/js/mobconfdebuf.js';
 import {
          SKILL_ID_ABYSS_SLAYER, SKILL_ID_ARUGUTUS_VITA, SKILL_ID_ATTACK_STANCE,
@@ -31,11 +34,50 @@ import {
          SKILL_ID_SHADOW_SENSE, SKILL_ID_SHIHO_FU_ZYOTAI, SKILL_ID_SHIHO_GOGYO_ZIN,
          SKILL_ID_SHINKONO_ISHI, SKILL_ID_SPIRIT_MASTERY, SKILL_ID_STAGE_MANNER,
          SKILL_ID_TANKEN_YUMI_SHUREN, SKILL_ID_TATE_SHUREN, SKILL_ID_TWOHAND_DEFENDING,
-         SKILL_ID_TWO_AXE_DEFENDING, SKILL_ID_YARI_KATATE_KEN_SHUREN
+         SKILL_ID_TWO_AXE_DEFENDING, SKILL_ID_YARI_KATATE_KEN_SHUREN,
+         SKILL_ID_GOLDENE_TONE, SKILL_ID_NATURE_AID, SKILL_ID_OVERCOMING_CRISIS, SKILL_ID_SIXTH_SENSE,
+         SKILL_ID_TEMPERING,
 } from '../../../roro/m/js/skill.dat.js';
 import { UsedSkillSearch, n_A_PassSkill, n_A_PassSkill8 } from './skillstate.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: 共有 state 追加分
+import {
+         n_A_JOB,
+} from '../../../roro/m/js/roro-state.js';
+
+// C-6: global.js 管理の共有 conf state
+import {
+         g_confDataNizi, g_confDataYozi, g_objCharaConfCustomSpecStatus,
+} from './global.js';
+
+// C-6: head.js 公開関数（head-bridge 経由）
+import {
+         calc, ApplyPhysicalSpecializeMonster, AutoCalc,
+} from './head-bridge.js';
+
+// C-6: foot.js 公開関数（foot-bridge 経由）
+import {
+         GetEquippedTotalSPEquip, GetEquippedTotalSPCardAndElse, InitJobInfo, StAllCalc,
+} from '../../../roro/m/js/foot-bridge.js';
+// ↑ GetEquippedTotalSPEquip/GetEquippedTotalSPCardAndElse の実体は foot-equipped-sp.js へ
+//   移動済み。foot-equipped-sp.js が g_pureStatus を本ファイル(hmjob.js)から import しているため、
+//   本ファイルから foot-equipped-sp.js への直接 import は 2 ファイル間の循環になり不可
+//   （実際に全消費先で直接 import を試みたところ既存の循環グループが 5→1・34→49ファイルに
+//   合体した。ブリッジ経由に統一して回避している）。
+
+// C-6: ro4 側共有 state（旧 head.js window 変数）
+import {
+         n_A_ActiveSkill, n_A_ActiveSkillLV, n_tok,
+} from './ro4-state.js';
+
+// C-6: 共有 state（旧 foot.js window 変数）
+import {
+         SU_STR, SU_AGI, SU_VIT, SU_DEX,
+         SU_INT, SU_LUK, n_A_WeaponType,
+} from '../../../roro/m/js/roro-state.js';
+
 import { CAttackMethodAreaComponentManager } from './CAttackMethodAreaComponentManager.js';
+import { set_n_Nitou } from './global.js';
 export let g_pureStatus = [];
 export let g_bonusStatus = [];
 
@@ -60,7 +102,8 @@ export function RebuildStatusSelect(jobId) {
 	if (typeof jobId === "undefined" || jobId === null) {
 		jobId = document.getElementById("OBJID_SELECT_JOB").value;
 	}
-	let jobData = JobMap.getById(jobId);
+	// セレクトボックスの value は mig ID の数値文字列
+	const migId = parseInt(jobId, 10);
 
 	// 基本ステータス
 	let inputStr = document.getElementById("OBJID_SELECT_STATUS_STR");
@@ -70,7 +113,7 @@ export function RebuildStatusSelect(jobId) {
 	let inputDex = document.getElementById("OBJID_SELECT_STATUS_DEX");
 	let inputLuk = document.getElementById("OBJID_SELECT_STATUS_LUK");
 
-	let statusBaseMax = GetStatusMax(jobData.getMigIdNum(), n_A_PassSkill8[13]);
+	let statusBaseMax = GetStatusMax(migId, n_A_PassSkill8[13]);
 
 	inputStr.max = statusBaseMax;
 	inputAgi.max = statusBaseMax;
@@ -111,7 +154,7 @@ export function RebuildStatusSelect(jobId) {
 	inputCrt.value = 0;
 
 	// 四次職出ない場合は、特性ステータス欄は非表示
-	if (jobData.getBaseLvMin() < 200) {
+	if (GetBaseLevelMin(migId) < 200) {
 		document.getElementById("OBJID_TABLE_SPEC_STATUS").style.display = "none";
 	} else {
 		document.getElementById("OBJID_TABLE_SPEC_STATUS").style.display = "table";
@@ -154,8 +197,8 @@ export function CalcStatusPoint(bIgnoreAutoCalc, bIgnorePointCap = false) {
 	var stValCON = eval(_cf.A_CON.value);
 	var stValCRT = eval(_cf.A_CRT.value);
 
-	const jobData = JobMap.getById(jobId);
-	const migJobIdNum = jobData.getMigIdNum();
+	// セレクトボックスの value は mig ID の数値文字列
+	const migJobIdNum = parseInt(jobId, 10);
 
 	// 消費ステータスポイントを計算する
 	var stPointUsed = 0;
@@ -179,8 +222,8 @@ export function CalcStatusPoint(bIgnoreAutoCalc, bIgnorePointCap = false) {
 	InitJobInfo();
 
 	// ベースレベル情報の取得
-	var blvMin = jobData.getBaseLvMin();
-	var blvMax = jobData.getBaseLvMax();
+	var blvMin = GetBaseLevelMin(migJobIdNum);
+	var blvMax = GetBaseLevelMax(migJobIdNum);
 
 	// 初期ステータスポイントの決定
 	var stPointEarned = 48;
@@ -314,20 +357,12 @@ export function CalcStatusPoint(bIgnoreAutoCalc, bIgnorePointCap = false) {
 	g_CON = stValCON;
 	g_CRT = stValCRT;
 	g_BaseLV = Number(_cf.A_BaseLV.value);
-	// Pattern A: window sync
-	window.g_STR = g_STR; window.g_AGI = g_AGI; window.g_VIT = g_VIT;
-	window.g_INT = g_INT; window.g_DEX = g_DEX; window.g_LUK = g_LUK;
-	window.g_POW = g_POW; window.g_STA = g_STA; window.g_WIS = g_WIS;
-	window.g_SPL = g_SPL; window.g_CON = g_CON; window.g_CRT = g_CRT;
-	window.g_BaseLV = g_BaseLV;
 
 	myInnerHtml("A_STPOINT", stPointEarned - stPointUsed, 0);
 	myInnerHtml("OBJID_SPAN_STATUS_T_STATUS_POINT", stTSPointEarned - stTSPointUsed, 0);
 
 	// 特性ステータス仮処理
-	// とりあえず、グローバル空間を汚す
 	g_pureStatus = [];
-	window.g_pureStatus = g_pureStatus;
 	g_pureStatus[MIG_PARAM_ID_POW] = HtmlGetObjectValueByIdAsInteger("OBJID_SELECT_STATUS_POW", 0);
 	g_pureStatus[MIG_PARAM_ID_STA] = HtmlGetObjectValueByIdAsInteger("OBJID_SELECT_STATUS_STA", 0);
 	g_pureStatus[MIG_PARAM_ID_WIS] = HtmlGetObjectValueByIdAsInteger("OBJID_SELECT_STATUS_WIS", 0);
@@ -552,9 +587,7 @@ export function StoreSpecStatusBonusAll(valPOW, valSTA, valWIS, valSPL, valCON, 
 
 	var value = 0;
 
-	// とりあえず、グローバル空間を汚す
 	g_bonusStatus = [];
-	window.g_bonusStatus = g_bonusStatus;
 	g_bonusStatus[MIG_PARAM_ID_POW] = valPOW;
 	g_bonusStatus[MIG_PARAM_ID_STA] = valSTA;
 	g_bonusStatus[MIG_PARAM_ID_WIS] = valWIS;
@@ -1748,13 +1781,14 @@ export function ApplySpecModify(spid, spVal) {
  * @param {string} jobId
  */
 export function migrateOtherJob(jobId) {
-	let jobData = JobMap.getById(jobId);
+	// セレクトボックスの value は mig ID の数値文字列
+	const migId = parseInt(jobId, 10);
 
 	const recentJobMigId = n_A_JOB;
 	let dataURL = "";
 	let funcModifySaveData = function (saveDataArrayF) {
 		// 職業ID
-		saveDataArrayF[1] = jobData.getMigIdNum();
+		saveDataArrayF[1] = migId;
 		// 自動レベル調整は強制OFF
 		saveDataArrayF[11] = 0;
 		return saveDataArrayF;
@@ -1763,18 +1797,17 @@ export function migrateOtherJob(jobId) {
 	showLoadingIndicator();
 	setTimeout(() => {
 		// 変更後の職業の二刀流可能性に合わせる
-		window.n_Nitou = IsDualArmsJob(jobData.getMigIdNum());
+		set_n_Nitou(IsDualArmsJob(migId));
 		// TODO: 暫定対処　旧形式の保存処理呼び出し
 		// 「プレイヤー状態異常設定」のように旧形式に存在しなかった入力項目は維持できないということ
 		dataURL = SaveSystem(funcModifySaveData);
 		// URL入力を実行
 		CSaveController.loadFromURL(dataURL);
 		// 異なる職業系列へ変更する場合
-		if (!IsSameJobGroup(jobData.getMigIdNum(), recentJobMigId)) {
+		if (!IsSameJobGroup(migId, recentJobMigId)) {
 			// 習得スキルの初期化
-			window.n_A_LearnedSkill = new Array();
 			for (let dmyidx = 0; dmyidx < LEARNED_SKILL_MAX_COUNT; dmyidx++) {
-				window.n_A_LearnedSkill[dmyidx] = 0;
+				n_A_LearnedSkill[dmyidx] = 0;
 			}
 			OnClickSkillSWLearned();
 			// 職固有自己支援・パッシブ持続系の初期化
@@ -1841,10 +1874,36 @@ export const OnChangeStatus = _debounce(function() {
 	AutoCalc();
 }, 200);
 
-if (typeof window !== 'undefined') {
-	window.RebuildStatusSelect = RebuildStatusSelect;
-	window.CalcStatusPoint = CalcStatusPoint;
-	window.GetTotalPureBasicStatus = GetTotalPureBasicStatus;
-	window.GetTotalSpecStatus = GetTotalSpecStatus;
-	window.ApplySpecModify = ApplySpecModify;
-}
+import { register } from './engine-registry.js';
+register('CalcStatusPoint', CalcStatusPoint);
+register('RebuildStatusSelect', RebuildStatusSelect);
+import { __registerHmjobFunctions } from './hmjob-bridge.js';
+import { CHARA_DATA_INDEX_FLEE, CHARA_DATA_INDEX_HIT, CHARA_DATA_INDEX_STATUS_ATK, CHARA_DATA_INDEX_STATUS_MATK } from '../../../roro/m/js/const/EnumCharaDataIndex.js';
+import { EQUIP_REGION_ID_SHIELD } from '../../../roro/m/js/const/EnumEquipRegionId.js';
+import {
+    ITEM_KIND_AXE_2HAND, ITEM_KIND_BOOK, ITEM_KIND_BOW, ITEM_KIND_CLUB, ITEM_KIND_FIST, ITEM_KIND_GATLINGGUN,
+    ITEM_KIND_GRENADEGUN, ITEM_KIND_HANDGUN, ITEM_KIND_KATAR, ITEM_KIND_KNIFE, ITEM_KIND_MUSICAL, ITEM_KIND_RIFLE,
+    ITEM_KIND_SHOTGUN, ITEM_KIND_SPEAR, ITEM_KIND_SPEAR_2HAND, ITEM_KIND_STUFF, ITEM_KIND_SWORD, ITEM_KIND_SWORD_2HAND,
+    ITEM_KIND_WHIP,
+} from '../../../roro/m/js/const/EnumItemKind.js';
+import {
+    ITEM_SP_ASPD_PLUS, ITEM_SP_ATK_PLUS, ITEM_SP_CRITICAL_DAMAGE_UP, ITEM_SP_CRI_PLUS, ITEM_SP_C_RATE_PLUS, ITEM_SP_DEF_PLUS,
+    ITEM_SP_FLEE_PLUS, ITEM_SP_HIT_PLUS, ITEM_SP_H_PLUS_PLUS, ITEM_SP_IGNORE_MRES_RACE_ALL, ITEM_SP_IGNORE_RES_RACE_ALL, ITEM_SP_LONGRANGE_DAMAGE_UP,
+    ITEM_SP_MAGICAL_DAMAGE_UP_ELM_DARK, ITEM_SP_MAGICAL_DAMAGE_UP_ELM_EARTH, ITEM_SP_MAGICAL_DAMAGE_UP_ELM_FIRE, ITEM_SP_MAGICAL_DAMAGE_UP_ELM_HOLY, ITEM_SP_MAGICAL_DAMAGE_UP_ELM_POISON, ITEM_SP_MAGICAL_DAMAGE_UP_ELM_PSYCO,
+    ITEM_SP_MAGICAL_DAMAGE_UP_ELM_UNDEAD, ITEM_SP_MAGICAL_DAMAGE_UP_ELM_VANITY, ITEM_SP_MAGICAL_DAMAGE_UP_ELM_WATER, ITEM_SP_MAGICAL_DAMAGE_UP_ELM_WIND, ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_DARK, ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_EARTH,
+    ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_FIRE, ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_HOLY, ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_POISON, ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_PSYCO, ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_UNDEAD, ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_VANITY,
+    ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_WATER, ITEM_SP_MAGICAL_DAMAGE_UP_MONSTER_ELM_WIND, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_ANGEL, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_ANIMAL, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_DEMON, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_DRAGON,
+    ITEM_SP_MAGICAL_DAMAGE_UP_RACE_FISH, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_HUMAN, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_HUMAN_NOT_PLAYER, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_INSECT, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_PLANT, ITEM_SP_MAGICAL_DAMAGE_UP_RACE_SOLID,
+    ITEM_SP_MAGICAL_DAMAGE_UP_RACE_UNDEAD, ITEM_SP_MAGICAL_DAMAGE_UP_SIZE_LARGE, ITEM_SP_MAGICAL_DAMAGE_UP_SIZE_MEDIUM, ITEM_SP_MAGICAL_DAMAGE_UP_SIZE_SMALL, ITEM_SP_MATK_PLUS_TYPE_NOT_WEAPON, ITEM_SP_MAXHP_UP,
+    ITEM_SP_MDEF_PLUS, ITEM_SP_MRES_PLUS, ITEM_SP_PERFECT_ATTACK_UP, ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_DARK, ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_EARTH, ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_FIRE,
+    ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_HOLY, ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_POISON, ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_PSYCO, ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_UNDEAD, ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_VANITY, ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_WATER,
+    ITEM_SP_PHYSICAL_DAMAGE_UP_ELM_WIND, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_DARK, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_EARTH, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_FIRE, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_HOLY, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_POISON,
+    ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_PSYCO, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_UNDEAD, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_VANITY, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_WATER, ITEM_SP_PHYSICAL_DAMAGE_UP_MONSTER_ELM_WIND, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_ANGEL,
+    ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_ANIMAL, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_DEMON, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_DRAGON, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_FISH, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_HUMAN, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_HUMAN_NOT_PLAYER,
+    ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_INSECT, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_PLANT, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_SOLID, ITEM_SP_PHYSICAL_DAMAGE_UP_RACE_UNDEAD, ITEM_SP_PHYSICAL_DAMAGE_UP_SIZE_LARGE, ITEM_SP_PHYSICAL_DAMAGE_UP_SIZE_MEDIUM,
+    ITEM_SP_PHYSICAL_DAMAGE_UP_SIZE_SMALL, ITEM_SP_PHYSICAL_RESIST_SIZE_LARGE, ITEM_SP_PHYSICAL_RESIST_SIZE_MEDIUM, ITEM_SP_PHYSICAL_RESIST_SIZE_SMALL, ITEM_SP_P_ATK_PLUS, ITEM_SP_RESIST_ELM_DARK,
+    ITEM_SP_RESIST_ELM_UNDEAD, ITEM_SP_RESIST_ELM_WATER, ITEM_SP_RES_PLUS, ITEM_SP_SHORTRANGE_DAMAGE_UP, ITEM_SP_STUFF2HAND, ITEM_SP_S_MATK_PLUS,
+} from '../../../roro/m/js/const/EnumItemSpId.js';
+import { MIG_PARAM_ID_CON, MIG_PARAM_ID_CRT, MIG_PARAM_ID_POW, MIG_PARAM_ID_SPL, MIG_PARAM_ID_STA, MIG_PARAM_ID_WIS } from '../../../roro/m/js/const/EnumMigItemParamId.js';
+import { MONSTER_DATA_INDEX_MRES, MONSTER_DATA_INDEX_RES } from '../../../roro/m/js/const/EnumMonsterDataIndex.js';
+__registerHmjobFunctions({ ApplySpecModify, GetTotalPureBasicStatus, GetTotalSpecStatus });

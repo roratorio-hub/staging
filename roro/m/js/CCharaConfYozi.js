@@ -2,6 +2,7 @@ import { CConfBase } from './CConfBase.js';
 // === AUTO-GENERATED IMPORTS ===
 import './CConfBase.js';
 import { HtmlCreateElementOption } from '../../common/js/util.js';
+import { CONTROL_TYPE_CHECKBOX, CONTROL_TYPE_DUMMY, CONTROL_TYPE_SELECTBOX_NUMBER, CONTROL_TYPE_SELECTBOX_SPECIAL } from './const/EnumControlType.js';
 // === END AUTO-GENERATED IMPORTS ===
 
 export function CCharaConfYozi(confArray) {
@@ -359,7 +360,6 @@ export function CCharaConfYozi(confArray) {
 			CCharaConfYozi.CONF_ID_BENEDICTUM,
 			CCharaConfYozi.CONF_ID_CLIMAX_IMPACT,
 			CCharaConfYozi.CONF_ID_SPELL_ENCHANTING,
-			CCharaConfYozi.CONF_ID_KOGEKI_SOCHI_YUKOKA,
 			CCharaConfYozi.CONF_ID_BOGYO_SOCHI_YUKOKA,
 			CCharaConfYozi.CONF_ID_MUSICAL_INTERLUDE,
 			CCharaConfYozi.CONF_ID_YUYAKENO_SERENADE,
@@ -396,7 +396,7 @@ export function CCharaConfYozi(confArray) {
 				// 選択セレクトボックスを生成
 				const objSelect = document.createElement("select");
 				objSelect.setAttribute("id", controlId);
-				objSelect.setAttribute("onChange", "CConfBase.OnChangeValueHandler(" + this.instanceNo + ", true)");
+				objSelect.addEventListener("change", () => CConfBase.OnChangeValueHandler(this.instanceNo, true));
 				objTd.appendChild(objSelect);
 				// セレクトオプションを生成
 				HtmlCreateElementOption(0, "無し", objSelect);

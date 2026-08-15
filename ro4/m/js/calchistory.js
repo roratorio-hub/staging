@@ -1,6 +1,15 @@
 // === AUTO-GENERATED IMPORTS ===
 import { CItemInfoManager } from '../../../roro/m/js/CItemInfoManager.js';
 // === END AUTO-GENERATED IMPORTS ===
+// C-6: head.js 公開関数（head-bridge 経由）
+import {
+         calc,
+} from './head-bridge.js';
+// C-6: engine-registry（CSaveController.js との循環 import 回避）
+import { get as registryGet } from './engine-registry.js';
+// Chart.js ESM（auto = 全チャートタイプ登録済みビルド）
+import Chart from 'https://cdn.jsdelivr.net/npm/chart.js@4.5.1/auto/+esm';
+
 $(function () {
   const buildForm = () => {
 	let test = document.getElementById("history_graph");
@@ -140,18 +149,17 @@ div.clip_memo {
           }
         },
         onClick: (e) => {
-          const canvasPosition = Chart.helpers.getRelativePosition(e, chart);
-          const dataX = chart.scales.x.getValueForPixel(canvasPosition.x);
+          // v4: onClick の e は ChartEvent — e.x がキャンバス座標を直接保持
+          const dataX = chart.scales.x.getValueForPixel(e.x);
           if (chart.data.datasets[0].data.length > dataX) {
             let url = chart.data.datasets[0].metadata[Math.abs(dataX)]["url"];
-            CSaveController.loadFromURL(url);
+            registryGet('CSaveController').loadFromURL(url);
             CItemInfoManager.OnClickExtractSwitch();
           }
         }
       }
     });
     g_Chart = chart;
-    if (typeof window !== 'undefined') window.g_Chart = g_Chart;
     $("#history_clip").click(e => {
       // 直前の敵と同じか？
       if (target != $(".OBJID_MONSTER_MAP_MONSTER").val()) {
@@ -163,11 +171,11 @@ div.clip_memo {
         chart.data.datasets[3].data = [];
         target = $(".OBJID_MONSTER_MAP_MONSTER").val();
       }
-      const mgr = CSaveController.getSaveDataManagerCur();
+      const mgr = registryGet('CSaveController').getSaveDataManagerCur();
       mgr.ReCalcManager();
       calc();
       LoadTomSelect();
-      const metadata = { "memo": "", "url": CSaveController.encodeToURL() };
+      const metadata = { "memo": "", "url": registryGet('CSaveController').encodeToURL() };
       if ($("#clip_with_memo").prop('checked')) {
         let memo = prompt("clipメモ");
         if (memo) metadata["memo"] = memo;
@@ -236,7 +244,7 @@ div.clip_memo {
       $(e.target).next("input").toggle().focus();
     });
     $(document).on("change", "input.clip_memo", (e) => {
-      if (typeof window !== 'undefined' && window.g_Chart !== chart) return;
+      if (g_Chart !== chart) return;
       const index = e.target.closest("tr").rowIndex - 1;
       data.datasets[0].metadata[index]["memo"] = e.target.value;
       chart.update();
@@ -248,7 +256,7 @@ div.clip_memo {
       $(e.target).prev("div").toggle();
     });
     $(document).on("click", ".up_clip", (e) => {
-      if (typeof window !== 'undefined' && window.g_Chart !== chart) return;
+      if (g_Chart !== chart) return;
       const row = e.target.closest("tr");
       if (row.previousElementSibling) {
         const index = row.rowIndex - 1;
@@ -259,7 +267,7 @@ div.clip_memo {
       }
     });
     $(document).on("click", ".down_clip", (e) => {
-      if (typeof window !== 'undefined' && window.g_Chart !== chart) return;
+      if (g_Chart !== chart) return;
       const row = e.target.closest("tr");
       if (row.nextElementSibling) {
         const index = row.rowIndex - 1;
@@ -270,7 +278,7 @@ div.clip_memo {
       }
     });
     $(document).on("click", ".remove_clip", (e) => {
-      if (typeof window !== 'undefined' && window.g_Chart !== chart) return;
+      if (g_Chart !== chart) return;
       const row = e.target.closest("tr");
       const index = row.rowIndex - 1;
       data.labels.pop();
